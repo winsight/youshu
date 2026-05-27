@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="asset_sum"
+        android:label="有数"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

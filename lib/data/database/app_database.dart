@@ -1,8 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-import 'dart:io';
+import 'package:drift_sqflite/drift_sqflite.dart';
 import 'tables/assets_table.dart';
 import 'tables/wishlist_table.dart';
 import 'tables/sync_meta_table.dart';
@@ -20,9 +17,7 @@ class AppDatabase extends _$AppDatabase {
 
   static QueryExecutor _openConnection() {
     return LazyDatabase(() async {
-      final dbFolder = await getApplicationDocumentsDirectory();
-      final file = File(p.join(dbFolder.path, 'asset_sum.db'));
-      return NativeDatabase.createInBackground(file);
+      return SqfliteQueryExecutor.inDatabaseFolder(path: 'asset_sum.db');
     });
   }
 }

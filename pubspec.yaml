@@ -1,5 +1,5 @@
 name: asset_sum
-description: "Personal Asset Tracking & Statistics App"
+description: "有数 - 个人资产管理与统计应用"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -19,7 +19,7 @@ dependencies:
 
   # Local database
   drift: ^2.25.1
-  sqlite3_flutter_libs: ^0.5.30
+  drift_sqflite: ^2.0.1
   path_provider: ^2.1.5
   path: ^1.9.1
 
@@ -49,6 +49,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.25.0
   build_runner: ^2.4.14
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
