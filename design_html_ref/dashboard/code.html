@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Assets Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;500;700&amp;family=Nunito+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {error: "#b83230", "inverse-surface": "#2e3230", "tertiary-fixed": "#f8e0a8", "on-error-container": "#690005", "error-container": "#ffdad8", tertiary: "#705c30", secondary: "#6b6358", "on-secondary-container": "#5e5548", "surface-bright": "#faf6f0", "surface-container-low": "#f5f1ea", outline: "#74796e", "on-surface": "#2e3230", "surface-tint": "#4a7c59", "on-secondary-fixed": "#1e1a13", "on-tertiary": "#ffffff", "on-tertiary-container": "#554020", "on-secondary": "#ffffff", "secondary-container": "#f0e8db", "on-primary-fixed-variant": "#2a6038", primary: "#4a7c59", "outline-variant": "#c4c8bc", "on-secondary-fixed-variant": "#4a4538", "secondary-fixed-dim": "#d4ccbf", surface: "#faf6f0", "on-tertiary-fixed-variant": "#554020", "inverse-on-surface": "#f5f0e8", "on-error": "#ffffff", "primary-fixed": "#c8e8d0", "surface-variant": "#e4e0d8", "surface-container-lowest": "#ffffff", "on-surface-variant": "#4a4e4a", "on-background": "#2e3230", "on-primary": "#ffffff", "tertiary-fixed-dim": "#dcc48e", "surface-container-high": "#eae6de", "on-primary-fixed": "#002110", "secondary-fixed": "#f0e8db", "surface-container-highest": "#e4e0d8", "primary-container": "#78a886", "surface-dim": "#dbd7cf", "inverse-primary": "#8ecf9e", "surface-container": "#f0ece4", "tertiary-container": "#c4a66a", background: "#faf6f0", "on-primary-container": "#d8f0de", "primary-fixed-dim": "#8ecf9e", "on-tertiary-fixed": "#221a05"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}, spacing: {"card-gap": "12px", base: "8px", "section-margin": "24px", "container-padding": "16px", gutter: "12px"}, fontFamily: {"label-md": ["Hanken Grotesk"], "headline-lg": ["Hanken Grotesk"], "headline-md": ["Hanken Grotesk"], "headline-sm": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "headline-lg-mobile": ["Hanken Grotesk"], "body-lg": ["Hanken Grotesk"], "label-lg": ["Hanken Grotesk"], headline: ["Literata"], display: ["Literata"], body: ["Nunito Sans"], label: ["Nunito Sans"]}, fontSize: {"label-md": ["11px", {lineHeight: "1", fontWeight: "500"}], "headline-lg": ["32px", {lineHeight: "1.2", fontWeight: "700"}], "headline-md": ["24px", {lineHeight: "1.3", fontWeight: "600"}], "headline-sm": ["20px", {lineHeight: "1.4", fontWeight: "600"}], "body-md": ["14px", {lineHeight: "1.5", fontWeight: "400"}], "headline-lg-mobile": ["28px", {lineHeight: "1.2", fontWeight: "700"}], "body-lg": ["18px", {lineHeight: "1.5", fontWeight: "400"}], "label-lg": ["12px", {lineHeight: "1", letterSpacing: "0.02em", fontWeight: "600"}]}}}};</script>
+<style>
+        body {
+            font-family: 'Hanken Grotesk', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-nav {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .gradient-bg {
+            background: radial-gradient(circle at top left, #ccff00 0%, #faf9fe 70%);
+        }
+        .asset-card-shadow {
+            box-shadow: 0px 4px 20px rgba(0,0,0,0.04);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- Header Section -->
+<header class="gradient-bg pt-10 px-container-padding pb-6 space-y-4 sticky top-0 z-40">
+<div class="flex justify-between items-center">
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile text-on-surface">Assets</h1>
+<div class="flex gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined text-on-surface">search</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined text-on-surface">menu</span>
+</button>
+</div>
+</div>
+<!-- Summary Card -->
+<div class="bg-surface-container-lowest rounded-xl p-5 asset-card-shadow space-y-4">
+<div class="flex items-center gap-2">
+<span class="text-label-lg font-label-lg text-on-surface-variant">Asset Overview</span>
+<span class="bg-surface-container-high px-2 py-0.5 rounded-full text-[10px] font-bold text-on-surface-variant">36/36</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<p class="text-label-lg font-label-lg text-on-surface-variant">Total Value</p>
+<p class="text-headline-md font-headline-md text-on-surface">¥391,279.00</p>
+</div>
+<div class="space-y-1">
+<p class="text-label-lg font-label-lg text-on-surface-variant">Daily Avg</p>
+<p class="text-headline-md font-headline-md text-on-surface">¥345.49</p>
+</div>
+</div>
+<!-- Global Progress/Status -->
+<div class="flex justify-between items-center pt-2">
+<div class="flex gap-4">
+<div class="flex flex-col gap-1">
+<span class="text-[10px] text-on-surface-variant">In Service <span class="text-on-surface font-bold">31</span></span>
+<div class="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="w-[85%] h-full bg-primary"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-[10px] text-on-surface-variant">Retired <span class="text-on-surface font-bold">2</span></span>
+<div class="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="w-[10%] h-full bg-[#f4a261]"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-[10px] text-on-surface-variant">Sold <span class="text-on-surface font-bold">3</span></span>
+<div class="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="w-[15%] h-full bg-secondary-fixed-dim"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Filters -->
+<section class="px-container-padding py-4 overflow-x-auto whitespace-nowrap no-scrollbar flex gap-4 items-center">
+<button class="text-label-lg font-label-lg border-b-2 border-primary pb-1 text-on-surface">All</button>
+<button class="text-label-lg font-label-lg text-on-surface-variant hover:text-on-surface pb-1">Electronics</button>
+<button class="text-label-lg font-label-lg text-on-surface-variant hover:text-on-surface pb-1">Transport</button>
+<button class="text-label-lg font-label-lg text-on-surface-variant hover:text-on-surface pb-1">Collection</button>
+<button class="text-label-lg font-label-lg text-on-surface-variant hover:text-on-surface pb-1">Tools</button>
+</section>
+<!-- Sub-Filters -->
+<section class="px-container-padding flex justify-between items-center mb-6">
+<div class="flex gap-2">
+<button class="bg-inverse-surface text-inverse-on-surface px-4 py-1.5 rounded-full text-label-lg font-label-lg">All</button>
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-1.5 rounded-full text-label-lg font-label-lg">Active</button>
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-1.5 rounded-full text-label-lg font-label-lg">Retired</button>
+</div>
+<div class="flex gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" style='font-variation-settings: "FILL" 1;'>sort</span>
+<span class="material-symbols-outlined text-[20px]" style='font-variation-settings: "FILL" 1;'>filter_list</span>
+<span class="material-symbols-outlined text-[20px]" style='font-variation-settings: "FILL" 1;'>check_circle</span>
+</div>
+</section>
+<!-- Main Grid Content -->
+<main class="px-container-padding grid grid-cols-2 gap-card-gap">
+<!-- Asset Card 1 -->
+<article class="bg-surface-container-lowest rounded-xl p-3 asset-card-shadow flex flex-col gap-3 relative overflow-hidden group">
+<div class="absolute top-2 right-2 z-10">
+<div class="bg-primary/10 text-primary-container px-2 py-0.5 rounded-full flex items-center gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+<span class="text-[9px] font-bold text-on-primary-container">In Service</span>
+</div>
+</div>
+<div class="aspect-square bg-surface-container rounded-lg overflow-hidden">
+<img alt="Oppo Find X7" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A premium high-end smartphone with a large circular camera module on the back, showcased in a professional product photography style with soft studio lighting. The phone features a sleek dark finish and is positioned on a minimalist white surface. The background is a clean, neutral gradient of light grays to accentuate the device's metallic and glass textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIfQ2VGkTMRrWvZnWkwDzdBfl5JLebGkw-M7p1F834V4MYk9y1OP4DQWt8_nFd16VsZXuzeoHHtbD2EjzBavF6SAcsU3jTs1RI7Pue9jbHY7wDBHpXQriiTm43Y6ZKaWX0SHKoCAcrQAAqufnvvbwpYXxEkv2hGMSnLX6QEbFye9WOQDyU17oGq7N4vqWcYyA4Z1qZ1h9rd13qx1vnLRo4rFSDYIgdaFnlBVe7aElIBRq-sAiMrTfode8NbXIG2Hs0AZfMuhq5aNI"/>
+</div>
+<div class="space-y-1">
+<h3 class="text-label-lg font-label-lg text-on-surface truncate">Oppo Find X7 Ultra</h3>
+<p class="text-[10px] text-on-surface-variant">¥5299.00 | Used 1069 days</p>
+<div class="pt-2 flex flex-col gap-1">
+<p class="text-label-md font-label-md text-on-surface">¥4.95<span class="text-[10px] font-normal opacity-70">/day</span></p>
+<div class="w-full h-2 bg-surface-variant rounded-full mt-1 relative">
+<div class="absolute left-0 top-0 h-full bg-primary rounded-full" style="width: 75%;"></div>
+<div class="absolute right-0 -top-1 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-on-surface"></div>
+</div>
+<p class="text-[9px] text-right text-on-surface-variant">28 days left</p>
+</div>
+</div>
+</article>
+<!-- Asset Card 2 -->
+<article class="bg-surface-container-lowest rounded-xl p-3 asset-card-shadow flex flex-col gap-3 relative overflow-hidden group">
+<div class="absolute top-2 right-2 z-10">
+<div class="bg-primary/10 text-primary-container px-2 py-0.5 rounded-full flex items-center gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<span class="text-[9px] font-bold text-on-primary-container">In Service</span>
+</div>
+</div>
+<div class="aspect-square bg-surface-container rounded-lg overflow-hidden">
+<img alt="Apple iMac" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A sleek, modern desktop computer with a slim silver aluminum profile and a high-resolution glass display, set against a bright, airy office environment. The computer is shown from a slight side angle to highlight its thinness. The lighting is natural and bright, creating a crisp and professional look with soft shadows on the white desktop." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDN6VuM6GrxMi9gLCxAysGWbuOB0_moCn9BmRmdwQodnPnqehVxJHa4_PLbSntT6isb8H_3ZMNqKA_JFLsK3elrtRh1n_49NeCdvGqIrcS_Ohs-l2obVjyZM_pSObUDg_5TZLbFjS-E3BvsEVYrUxOMCZ_Tjyk_GhSRNgE5pl6gdclj5dAp2Ye_-ZUMELCt7FU1JoJTLKbGwI6mUuMdaDX6CWlyxeDXzgbdFz7jQTK8tQoNuR8C2mA7_-te4ECMWmS5sXEJkDDSNOw"/>
+</div>
+<div class="space-y-1">
+<h3 class="text-label-lg font-label-lg text-on-surface truncate">Apple iMac M3</h3>
+<p class="text-[10px] text-on-surface-variant">¥10899.00 | Used 1186 days</p>
+<div class="pt-2 flex flex-col gap-1">
+<p class="text-label-md font-label-md text-on-surface">¥9.18<span class="text-[10px] font-normal opacity-70">/day</span></p>
+<div class="w-full h-2 bg-surface-variant rounded-full mt-1 relative">
+<div class="absolute left-0 top-0 h-full bg-primary rounded-full" style="width: 95%;"></div>
+<div class="absolute right-0 -top-1 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-on-surface"></div>
+</div>
+<p class="text-[9px] text-right text-primary font-bold">Goal achieved</p>
+</div>
+</div>
+</article>
+<!-- Asset Card 3 -->
+<article class="bg-surface-container-lowest rounded-xl p-3 asset-card-shadow flex flex-col gap-3 relative overflow-hidden group">
+<div class="absolute top-2 right-2 z-10">
+<div class="bg-primary/10 text-primary-container px-2 py-0.5 rounded-full flex items-center gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<span class="text-[9px] font-bold text-on-primary-container">In Service</span>
+</div>
+</div>
+<div class="aspect-square bg-surface-container rounded-lg overflow-hidden">
+<img alt="Dell Monitor" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A professional 4K computer monitor with ultra-thin bezels and a high-contrast display showing vibrant, abstract digital art. The monitor is mounted on a stylish metallic stand. The setting is a clean, modern home workspace with high-key lighting, emphasizing the sleek lines and vivid screen colors of the hardware." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAScclGlH7co7pStHEvHC8WiSB-OQ-pmQCG9szyt1i7FSsF-sMIUj6abbhIDlVilUM_iDUdV7R04RckWpSzoAQdhX968DK887v3cUcxxrcJEFBSwdhX-kClF-K2DRJoSWU-1ul6YoVMv9M5s4TXrBRA_rXAMSp0-uFElf7zNHHU9zWao4oK3bNMTfg4qZ-CfWjvlA72C9RWOnRgsoI7WqIeR520cr_5bJPxjdROLdPLBHrd35xjDEKu6S9FmjJ7l1ve-uBM6_iRKKo"/>
+</div>
+<div class="space-y-1">
+<h3 class="text-label-lg font-label-lg text-on-surface truncate">Dell UltraSharp 27"</h3>
+<p class="text-[10px] text-on-surface-variant">¥2299.00 | Used 1170 days</p>
+<div class="pt-2 flex flex-col gap-1">
+<p class="text-label-md font-label-md text-on-surface">¥1.96<span class="text-[10px] font-normal opacity-70">/day</span></p>
+<div class="w-full h-2 bg-surface-variant rounded-full mt-1 relative">
+<div class="absolute left-0 top-0 h-full bg-primary rounded-full" style="width: 88%;"></div>
+<div class="absolute right-0 -top-1 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-on-surface"></div>
+</div>
+<p class="text-[9px] text-right text-on-surface-variant">42 days left</p>
+</div>
+</div>
+</article>
+<!-- Asset Card 4 -->
+<article class="bg-surface-container-lowest rounded-xl p-3 asset-card-shadow flex flex-col gap-3 relative overflow-hidden group">
+<div class="absolute top-2 right-2 z-10">
+<div class="bg-primary/10 text-primary-container px-2 py-0.5 rounded-full flex items-center gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<span class="text-[9px] font-bold text-on-primary-container">In Service</span>
+</div>
+</div>
+<div class="aspect-square bg-surface-container rounded-lg overflow-hidden">
+<img alt="Canon Camera" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A professional-grade mirrorless digital camera in white, featuring a large lens and complex control dials, positioned in a high-key studio environment. The camera's intricate design and textures are highlighted by soft, diffused lighting. The background is a seamless light-colored surface, creating a pristine and luxurious product presentation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlBKFFlDA-6TCO0gRufWeg31ndqB3TfwHl10kzBDsZTk9dYVgitFdTyUyFckHg91Ye3nw53rpUTdL_IzX4AQYXcefH4cOnUtnysV0HFXu2v54sFBYy2dKffb-knuortMxX4OE5PH5vmszJbrah7lkeZDCbFhXfYxJJWQ_HPWbKSZkh-wIDaT8qhbGjm8fZD2VnOPGU7m4kr3996BwJENdYKC3pIDddBj3WogYQJn6TPo5SMKvPudtEAq5fPiPahJQJQsyS3v5wubw"/>
+</div>
+<div class="space-y-1">
+<h3 class="text-label-lg font-label-lg text-on-surface truncate">Canon EOS R50</h3>
+<p class="text-[10px] text-on-surface-variant">¥6899.00 | Used 1331 days</p>
+<div class="pt-2 flex flex-col gap-1">
+<p class="text-label-md font-label-md text-on-surface">¥5.18<span class="text-[10px] font-normal opacity-70">/day</span></p>
+<div class="w-full h-2 bg-surface-variant rounded-full mt-1 relative">
+<div class="absolute left-0 top-0 h-full bg-primary rounded-full" style="width: 60%;"></div>
+<div class="absolute right-0 -top-1 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-on-surface"></div>
+</div>
+<p class="text-[9px] text-right text-on-surface-variant">312 days left</p>
+</div>
+</div>
+</article>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed right-6 bottom-24 w-14 h-14 rounded-full flex items-center justify-center active:scale-95 transition-all z-50 bg-primary-container text-on-primary-container shadow-[0_8px_32px_rgba(80,102,0,0.3)]">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</button>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 w-full z-50 glass-nav bg-surface/80 border-t border-outline-variant flex justify-around items-center px-4 py-2">
+<!-- Assets (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-110 duration-300 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-label-md font-label-md mt-1">Assets</span>
+</a>
+<!-- Wishlist -->
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">favorite</span>
+<span class="text-label-md font-label-md mt-1">Wishlist</span>
+</a>
+<!-- Trends -->
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="text-label-md font-label-md mt-1">Trends</span>
+</a>
+<!-- Settings -->
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md mt-1">Settings</span>
+</a>
+</nav>
+<script>
+        // Simple scroll interaction for header
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 10) {
+                header.classList.add('shadow-md');
+                header.classList.remove('gradient-bg');
+                header.classList.add('bg-surface');
+            } else {
+                header.classList.remove('shadow-md');
+                header.classList.add('gradient-bg');
+                header.classList.remove('bg-surface');
+            }
+        });
+
+        // Add touch feedbacks
+        const cards = document.querySelectorAll('article');
+        cards.forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Asset - Asset Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;500;700&amp;family=Nunito+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {error: "#b83230", "inverse-surface": "#2e3230", "tertiary-fixed": "#f8e0a8", "on-error-container": "#690005", "error-container": "#ffdad8", tertiary: "#705c30", secondary: "#6b6358", "on-secondary-container": "#5e5548", "surface-bright": "#faf6f0", "surface-container-low": "#f5f1ea", outline: "#74796e", "on-surface": "#2e3230", "surface-tint": "#4a7c59", "on-secondary-fixed": "#1e1a13", "on-tertiary": "#ffffff", "on-tertiary-container": "#554020", "on-secondary": "#ffffff", "secondary-container": "#f0e8db", "on-primary-fixed-variant": "#2a6038", primary: "#4a7c59", "outline-variant": "#c4c8bc", "on-secondary-fixed-variant": "#4a4538", "secondary-fixed-dim": "#d4ccbf", surface: "#faf6f0", "on-tertiary-fixed-variant": "#554020", "inverse-on-surface": "#f5f0e8", "on-error": "#ffffff", "primary-fixed": "#c8e8d0", "surface-variant": "#e4e0d8", "surface-container-lowest": "#ffffff", "on-surface-variant": "#4a4e4a", "on-background": "#2e3230", "on-primary": "#ffffff", "tertiary-fixed-dim": "#dcc48e", "surface-container-high": "#eae6de", "on-primary-fixed": "#002110", "secondary-fixed": "#f0e8db", "surface-container-highest": "#e4e0d8", "primary-container": "#78a886", "surface-dim": "#dbd7cf", "inverse-primary": "#8ecf9e", "surface-container": "#f0ece4", "tertiary-container": "#c4a66a", background: "#faf6f0", "on-primary-container": "#d8f0de", "primary-fixed-dim": "#8ecf9e", "on-tertiary-fixed": "#221a05"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}, spacing: {"card-gap": "12px", base: "8px", "section-margin": "24px", "container-padding": "16px", gutter: "12px"}, fontFamily: {"label-md": ["Hanken Grotesk"], "headline-lg": ["Hanken Grotesk"], "headline-md": ["Hanken Grotesk"], "headline-sm": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "headline-lg-mobile": ["Hanken Grotesk"], "body-lg": ["Hanken Grotesk"], "label-lg": ["Hanken Grotesk"], headline: ["Literata"], display: ["Literata"], body: ["Nunito Sans"], label: ["Nunito Sans"]}, fontSize: {"label-md": ["11px", {lineHeight: "1", fontWeight: "500"}], "headline-lg": ["32px", {lineHeight: "1.2", fontWeight: "700"}], "headline-md": ["24px", {lineHeight: "1.3", fontWeight: "600"}], "headline-sm": ["20px", {lineHeight: "1.4", fontWeight: "600"}], "body-md": ["14px", {lineHeight: "1.5", fontWeight: "400"}], "headline-lg-mobile": ["28px", {lineHeight: "1.2", fontWeight: "700"}], "body-lg": ["18px", {lineHeight: "1.5", fontWeight: "400"}], "label-lg": ["12px", {lineHeight: "1", letterSpacing: "0.02em", fontWeight: "600"}]}}}};</script>
+<style>
+        body {
+            background-color: #faf9fe;
+            font-family: 'Hanken Grotesk', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .custom-gradient {
+            background: radial-gradient(circle at top left, #ccff00 0%, #faf9fe 70%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #506600;
+            box-shadow: 0 0 0 2px rgba(80, 102, 0, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen text-on-surface">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-primary/10 to-transparent flex justify-between items-center px-container-padding py-base w-full">
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full hover:bg-surface-variant/50 transition-colors active:opacity-80 active:scale-95">
+<span class="material-symbols-outlined text-primary">close</span>
+</button>
+<h1 class="text-headline-md font-headline-md font-bold text-on-surface">New Asset</h1>
+</div>
+<button class="text-label-lg font-label-lg text-primary px-4 py-2 hover:bg-primary/5 rounded-full transition-colors">
+            Help
+        </button>
+</header>
+<main class="pt-20 pb-32 px-container-padding custom-gradient min-h-screen">
+<form class="max-w-md mx-auto space-y-section-margin" id="asset-form">
+<!-- Photo Upload Section -->
+<div class="flex flex-col items-center justify-center space-y-4">
+<div class="relative w-full aspect-video rounded-xl bg-surface-container-highest flex flex-col items-center justify-center border-2 border-dashed border-outline-variant hover:border-primary transition-all cursor-pointer overflow-hidden group" id="image-preview-container">
+<img class="hidden absolute inset-0 w-full h-auto object-cover" data-alt="A high-end professional studio photograph of a sleek modern laptop on a clean white surface with soft lime green ambient lighting. The style is minimalist and high-contrast, following a professional product photography aesthetic with diffused shadows and a bright, airy atmosphere reflecting the primary brand colors." id="image-preview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1M449JaeDv6hB6-IKz-y80UF5PD6oYyrpuWSyxBWDWPW5CvtnZKH3aUDWGkLF_HvkhxiSP6E6wfYWaR6y4Zkfv6rmkSC-7H3eUdpEMcBz_Xcw-TloPmvfAjwem7oYNIxGwFBHEYavCD9_zD-W3u8Al9j_J_mzP29k75spkqCbdW4w48cGsJ90S34qb3q6n-VU0UIx4M5EfzNJXGdgividb2lHN5bE09PfuZeJnMsJ66izo40UHSBReyb18CkWcHojiy1lhI6KK8c"/>
+<div class="flex flex-col items-center space-y-2 text-on-surface-variant group-hover:text-primary" id="upload-placeholder">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0;">add_a_photo</span>
+<span class="text-label-lg font-label-lg">Upload or Take Photo</span>
+</div>
+</div>
+</div>
+<!-- Form Content -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm space-y-6">
+<!-- Asset Name -->
+<div class="space-y-2">
+<label class="text-label-lg font-label-lg text-on-surface-variant">Asset Name</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-body-lg font-body-lg text-on-surface placeholder:text-on-surface-variant/50" placeholder="e.g. MacBook Pro 14" type="text"/>
+</div>
+<!-- Category -->
+<div class="space-y-2">
+<label class="text-label-lg font-label-lg text-on-surface-variant">Category</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-body-lg font-body-lg text-on-surface appearance-none cursor-pointer">
+<option disabled="" selected="" value="">Select category</option>
+<option value="digital">Life Digital</option>
+<option value="vehicles">Vehicles</option>
+<option value="art">Art Collection</option>
+<option value="tools">Academic Tools</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<!-- Purchase Price & Date Grid -->
+<div class="grid grid-cols-2 gap-card-gap">
+<div class="space-y-2">
+<label class="text-label-lg font-label-lg text-on-surface-variant">Purchase Price</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold">¥</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-8 pr-4 py-3 text-body-lg font-body-lg text-on-surface placeholder:text-on-surface-variant/50" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-label-lg font-label-lg text-on-surface-variant">Purchase Date</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-body-lg font-body-lg text-on-surface uppercase text-sm" type="date"/>
+</div>
+</div>
+<!-- Additional Details (Optional) -->
+<div class="space-y-2">
+<label class="text-label-lg font-label-lg text-on-surface-variant">Notes (Optional)</label>
+<textarea class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-body-lg font-body-lg text-on-surface placeholder:text-on-surface-variant/50 resize-none" placeholder="Condition, serial number, etc." rows="3"></textarea>
+</div>
+</div>
+<!-- Status Toggle -->
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-label-lg font-label-lg text-on-surface">Mark as In Service</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer group">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-fixed-dim peer-checked:shadow-[0_0_10px_rgba(171,214,0,0.4)] transition-colors duration-200"></div>
+</label>
+</div>
+</form>
+</main>
+<!-- Bottom Action Button -->
+<div class="fixed bottom-0 left-0 right-0 p-container-padding bg-surface/80 backdrop-blur-md border-t border-outline-variant shadow-lg z-50">
+<div class="max-w-md mx-auto">
+<button class="w-full bg-primary-container text-on-primary-container font-headline-sm py-5 px-6 rounded-xl shadow-[0_8px_30px_rgb(204,255,0,0.3)] hover:shadow-[0_8px_30px_rgb(204,255,0,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] active:shadow-inner transition-all duration-200 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                Save Asset
+            </button>
+</div>
+</div>
+<script>
+        // Simple Interaction logic
+        const uploadArea = document.getElementById('image-preview-container');
+        const imgPreview = document.getElementById('image-preview');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+
+        uploadArea.addEventListener('click', () => {
+            // Simulate photo selection
+            if (imgPreview.classList.contains('hidden')) {
+                imgPreview.classList.remove('hidden');
+                uploadPlaceholder.classList.add('hidden');
+                uploadArea.classList.remove('border-dashed');
+                uploadArea.classList.add('border-solid', 'border-primary');
+            } else {
+                imgPreview.classList.add('hidden');
+                uploadPlaceholder.classList.remove('hidden');
+                uploadArea.classList.add('border-dashed');
+                uploadArea.classList.remove('border-solid', 'border-primary');
+            }
+        });
+
+        // Dynamic gradient movement for background flair
+        document.addEventListener('mousemove', (e) => {
+            const body = document.querySelector('main');
+            const x = e.clientX / window.innerWidth * 100;
+            const y = e.clientY / window.innerHeight * 100;
+            body.style.background = `radial-gradient(circle at ${x}% ${y}%, #ccff0011 0%, #faf9fe 70%)`;
+        });
+    </script>
+</body></html>

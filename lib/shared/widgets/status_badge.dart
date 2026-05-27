@@ -1,0 +1,60 @@
+import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
+import '../../data/models/asset_status.dart';
+
+class StatusBadge extends StatelessWidget {
+  final AssetStatus status;
+  final bool showDot;
+
+  const StatusBadge({
+    super.key,
+    required this.status,
+    this.showDot = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withAlpha(20),
+        borderRadius: BorderRadius.circular(DesignTokens.radiusFull),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showDot) ...[
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: _dotColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            status.displayName,
+            style: const TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: AppColors.onPrimaryContainer,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color get _dotColor {
+    switch (status) {
+      case AssetStatus.inService:
+        return AppColors.primary;
+      case AssetStatus.retired:
+        return const Color(0xFFf4a261);
+      case AssetStatus.sold:
+        return AppColors.outline;
+    }
+  }
+}
