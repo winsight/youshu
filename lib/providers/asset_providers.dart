@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/asset.dart';
 import '../data/models/asset_status.dart';
-import '../data/models/asset_category.dart';
 import '../data/repository/statistics_repository.dart';
 import 'database_provider.dart';
 
@@ -32,27 +31,33 @@ final categoryDistributionProvider =
 
 // Filter state
 class FilterState {
-  final AssetCategory? category;
+  final String? category;
   final AssetStatus? status;
   final String sortBy;
+  final String searchQuery;
 
   const FilterState({
     this.category,
     this.status,
     this.sortBy = 'purchaseDate',
+    this.searchQuery = '',
   });
 
   FilterState copyWith({
-    AssetCategory? category,
+    String? category,
     AssetStatus? status,
     String? sortBy,
+    String? searchQuery,
     bool clearCategory = false,
     bool clearStatus = false,
+    bool clearSearch = false,
   }) {
     return FilterState(
       category: clearCategory ? null : (category ?? this.category),
       status: clearStatus ? null : (status ?? this.status),
       sortBy: sortBy ?? this.sortBy,
+      searchQuery:
+          clearSearch ? '' : (searchQuery ?? this.searchQuery),
     );
   }
 }
@@ -60,8 +65,12 @@ class FilterState {
 class FilterNotifier extends StateNotifier<FilterState> {
   FilterNotifier() : super(const FilterState());
 
-  void setCategory(AssetCategory? category) {
+  void setCategory(String? category) {
     state = state.copyWith(category: category, clearCategory: category == null);
+  }
+
+  void setSearch(String query) {
+    state = state.copyWith(searchQuery: query);
   }
 
   void setStatus(AssetStatus? status) {
@@ -80,9 +89,17 @@ final filterStateProvider = StateNotifierProvider<FilterNotifier, FilterState>((
 final filteredAssetsProvider = FutureProvider<List<Asset>>((ref) async {
   final filter = ref.watch(filterStateProvider);
   final repo = ref.watch(assetRepositoryProvider);
-  return repo.getFilteredAssets(
+  var assets = await repo.getFilteredAssets(
     category: filter.category,
     status: filter.status,
     sortBy: filter.sortBy,
   );
+  // Apply search filter
+  if (filter.searchQuery.isNotEmpty) {
+    final query = filter.searchQuery.toLowerCase();
+    assets = assets
+        .where((a) => a.name.toLowerCase().contains(query))
+        .toList();
+  }
+  return assets;
 });

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../data/models/asset_status.dart';
 
 class SubFilterChips extends StatelessWidget {
@@ -14,6 +15,7 @@ class SubFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final statuses = <AssetStatus?>[
       null,
       AssetStatus.inService,
@@ -24,13 +26,18 @@ class SubFilterChips extends StatelessWidget {
       children: [
         ...statuses.map((status) {
           final isSelected = selectedStatus == status;
-          final label = status == null ? 'All' : status.displayName;
+          final label = status == null
+              ? l10n.all
+              : status == AssetStatus.inService
+                  ? l10n.inService
+                  : l10n.retired;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: GestureDetector(
               onTap: () => onSelected(status),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.inverseSurface
@@ -54,7 +61,8 @@ class SubFilterChips extends StatelessWidget {
         }),
         const Spacer(),
         IconButton(
-          icon: const Icon(Icons.sort, size: 20, color: AppColors.onSurfaceVariant),
+          icon: const Icon(Icons.sort,
+              size: 20, color: AppColors.onSurfaceVariant),
           onPressed: () {},
         ),
       ],

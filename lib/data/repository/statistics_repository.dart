@@ -1,6 +1,5 @@
 import '../models/asset.dart';
 import '../models/asset_status.dart';
-import '../models/asset_category.dart';
 import 'asset_repository.dart';
 
 class DashboardSummary {
@@ -22,7 +21,7 @@ class DashboardSummary {
 }
 
 class CategoryDistribution {
-  final AssetCategory category;
+  final String category;
   final int count;
   final double totalValue;
   final double percentage;
@@ -69,7 +68,7 @@ class StatisticsRepository {
     final assets = await _assetRepo.getAllAssets();
     final totalValue =
         assets.fold<double>(0, (sum, a) => sum + a.purchasePrice);
-    final map = <AssetCategory, List<Asset>>{};
+    final map = <String, List<Asset>>{};
 
     for (final a in assets) {
       map.putIfAbsent(a.category, () => []).add(a);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_locale.dart';
 import '../../data/models/asset_status.dart';
 
 class StatusBadge extends StatelessWidget {
@@ -14,6 +15,7 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -35,7 +37,7 @@ class StatusBadge extends StatelessWidget {
             const SizedBox(width: 4),
           ],
           Text(
-            status.displayName,
+            _statusLabel(l10n),
             style: const TextStyle(
               fontSize: 9,
               fontWeight: FontWeight.bold,
@@ -45,6 +47,17 @@ class StatusBadge extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _statusLabel(AppL10n l10n) {
+    switch (status) {
+      case AssetStatus.inService:
+        return l10n.inService;
+      case AssetStatus.retired:
+        return l10n.retired;
+      case AssetStatus.sold:
+        return l10n.sold;
+    }
   }
 
   Color get _dotColor {

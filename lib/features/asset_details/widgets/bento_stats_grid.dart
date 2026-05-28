@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../data/models/asset.dart';
 
 class BentoStatsGrid extends StatelessWidget {
@@ -9,12 +10,13 @@ class BentoStatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Row(
       children: [
         Expanded(
           child: _BentoStat(
             icon: Icons.trending_down,
-            label: 'Est. Depreciation',
+            label: l10n.estDepreciation,
             value: '¥${asset.depreciation.toStringAsFixed(0)}',
             valueColor: AppColors.error,
           ),
@@ -23,7 +25,7 @@ class BentoStatsGrid extends StatelessWidget {
         Expanded(
           child: _BentoStat(
             icon: Icons.payments,
-            label: 'Resale Value',
+            label: l10n.resaleValue,
             value: '¥${asset.resaleValue.toStringAsFixed(0)}',
             valueColor: AppColors.primary,
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_locale.dart';
 import '../../providers/asset_providers.dart';
 import '../../shared/widgets/states.dart';
 import 'widgets/summary_card.dart';
@@ -18,7 +19,9 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final ScrollController _scrollController = ScrollController();
+  final _searchController = TextEditingController();
   bool _showShadow = false;
+  bool _showSearch = false;
 
   @override
   void initState() {
@@ -35,11 +38,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final summaryAsync = ref.watch(dashboardSummaryProvider);
     final filter = ref.watch(filterStateProvider);
     final assetsAsync = ref.watch(filteredAssetsProvider);
@@ -47,7 +52,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // Header
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
@@ -81,9 +85,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Assets',
-                          style: TextStyle(
+                        Text(
+                          l10n.assets,
+                          style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
                             color: AppColors.onSurface,
@@ -92,14 +96,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         Row(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.search,
+                              icon: Icon(
+                                  _showSearch ? Icons.close : Icons.search,
                                   color: AppColors.onSurface),
-                              onPressed: () {},
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.menu,
-                                  color: AppColors.onSurface),
-                              onPressed: () {},
+                              onPressed: () {
+                                setState(() {
+                                  _showSearch = !_showSearch;
+                                  if (!_showSearch) {
+                                    _searchController.clear();
+                                    ref
+                                        .read(filterStateProvider.notifier)
+                                        .setSearch('');
+                                  }
+                                });
+                              },
                             ),
                           ],
                         ),
@@ -122,7 +132,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
             ),
           ),
-          // Filters
+          // Search bar
+          if (_showSearch)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: l10n.isZh ? '搜索资产...' : 'Search assets...',
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            ref
+                                .read(filterStateProvider.notifier)
+                                .setSearch('');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: AppColors.surfaceContainerLow,
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(DesignTokens.radiusMd),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                onChanged: (v) {
+                  setState(() {});
+                  ref.read(filterStateProvider.notifier).setSearch(v);
+                },
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: CategoryFilterBar(
@@ -139,16 +184,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ref.read(filterStateProvider.notifier).setStatus(status),
             ),
           ),
-          // Asset Grid
           Expanded(
             child: assetsAsync.when(
               data: (assets) {
                 if (assets.isEmpty) {
                   return EmptyState(
                     icon: Icons.inventory_2_outlined,
-                    title: 'No assets yet',
-                    subtitle: 'Tap + to add your first asset',
-                    actionLabel: 'Add Asset',
+                    title: l10n.noAssets,
+                    subtitle: l10n.addFirstAsset,
+                    actionLabel: l10n.addAsset,
                     onAction: () => context.push('/add-asset'),
                   );
                 }
@@ -167,7 +211,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       AssetGridCard(asset: assets[index]),
                 );
               },
-              loading: () => const ShimmerLoading(itemCount: 6, itemHeight: 200),
+              loading: () =>
+                  const ShimmerLoading(itemCount: 6, itemHeight: 200),
               error: (e, _) => Center(child: Text('Error: $e')),
             ),
           ),

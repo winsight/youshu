@@ -8,10 +8,13 @@ import 'package:path_provider/path_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/uuid_generator.dart';
 import '../../data/models/asset.dart';
-import '../../data/models/asset_category.dart';
 import '../../data/models/asset_status.dart';
+import '../../data/models/category_model.dart';
 import '../../providers/database_provider.dart';
+import '../../providers/asset_providers.dart';
 import '../../services/background_removal/removal_facade.dart';
+import '../../core/l10n/app_locale.dart';
+import '../../shared/widgets/add_category_dialog.dart';
 
 class AddAssetScreen extends ConsumerStatefulWidget {
   final String? editAssetId;
@@ -29,9 +32,10 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   final _notesController = TextEditingController();
   final _merchantController = TextEditingController();
   final _warrantyController = TextEditingController();
+  final _customCategoryController = TextEditingController();
 
   DateTime _purchaseDate = DateTime.now();
-  AssetCategory _category = AssetCategory.electronics;
+  String _category = 'electronics';
   AssetStatus _status = AssetStatus.inService;
   File? _imageFile;
   bool _isSaving = false;
@@ -75,6 +79,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
     _notesController.dispose();
     _merchantController.dispose();
     _warrantyController.dispose();
+    _customCategoryController.dispose();
     super.dispose();
   }
 
@@ -96,13 +101,15 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
       setState(() => _imageFile = result);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Background removed')),
+          SnackBar(content: Text(AppL10n.of(context).backgroundRemoved)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Background removal failed: $e')),
+          SnackBar(
+              content: Text(
+                  '${AppL10n.of(context).backgroundRemoveFailed}: $e')),
         );
       }
     } finally {
@@ -159,10 +166,18 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
 
       await ref.read(assetRepositoryProvider).upsertAsset(asset);
 
+      // Invalidate providers for auto-refresh
+      ref.invalidate(assetListProvider);
+      ref.invalidate(filteredAssetsProvider);
+      ref.invalidate(dashboardSummaryProvider);
+      ref.invalidate(categoryDistributionProvider);
+
       if (mounted) {
+        final l10n = AppL10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isEditing ? 'Asset updated' : 'Asset saved'),
+            content: Text(
+                _isEditing ? l10n.assetUpdated : l10n.assetSaved),
           ),
         );
         context.pop();
@@ -180,6 +195,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -187,11 +203,11 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
           icon: const Icon(Icons.close),
           onPressed: () => context.pop(),
         ),
-        title: Text(_isEditing ? 'Edit Asset' : 'New Asset'),
+        title: Text(_isEditing ? l10n.editAsset : l10n.newAsset),
         actions: [
           TextButton(
             onPressed: () {},
-            child: const Text('Help'),
+            child: Text(l10n.help),
           ),
         ],
       ),
@@ -328,9 +344,9 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Upload or Take Photo',
-                      style: TextStyle(
+                    Text(
+                      AppL10n.of(context).uploadPhoto,
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppColors.onSurfaceVariant,
@@ -345,6 +361,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   }
 
   Widget _buildFormCard() {
+    final l10n = AppL10n.of(context);
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -361,7 +378,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildFieldLabel('Asset Name'),
+          _buildFieldLabel(l10n.assetName),
           const SizedBox(height: 8),
           TextFormField(
             controller: _nameController,
@@ -372,10 +389,10 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                   color: AppColors.onSurfaceVariant, fontSize: 16),
             ),
             validator: (v) =>
-                v == null || v.trim().isEmpty ? 'Name is required' : null,
+                v == null || v.trim().isEmpty ? l10n.nameRequired : null,
           ),
           const SizedBox(height: 20),
-          _buildFieldLabel('Category'),
+          _buildFieldLabel(l10n.category),
           const SizedBox(height: 8),
           _buildCategoryDropdown(),
           const SizedBox(height: 20),
@@ -385,7 +402,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFieldLabel('Purchase Price'),
+                    _buildFieldLabel(l10n.purchasePrice),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _priceController,
@@ -410,10 +427,10 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                       ),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Required';
+                          return l10n.priceRequired;
                         }
                         if (double.tryParse(v.trim()) == null) {
-                          return 'Invalid';
+                          return l10n.priceInvalid;
                         }
                         return null;
                       },
@@ -426,7 +443,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFieldLabel('Purchase Date'),
+                    _buildFieldLabel(l10n.purchaseDate),
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: () async {
@@ -461,15 +478,15 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildFieldLabel('Notes (Optional)'),
+          _buildFieldLabel(l10n.notes),
           const SizedBox(height: 8),
           TextFormField(
             controller: _notesController,
             maxLines: 3,
             style: const TextStyle(fontSize: 18, color: AppColors.onSurface),
-            decoration: const InputDecoration(
-              hintText: 'Condition, serial number, etc.',
-              hintStyle: TextStyle(
+            decoration: InputDecoration(
+              hintText: l10n.isZh ? '成色、序列号等' : 'Condition, serial number, etc.',
+              hintStyle: const TextStyle(
                   color: AppColors.onSurfaceVariant, fontSize: 16),
             ),
           ),
@@ -491,36 +508,81 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   }
 
   Widget _buildCategoryDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
+    final l10n = AppL10n.of(context);
+    final categoriesAsync = ref.watch(categoriesProvider);
+
+    return categoriesAsync.when(
+      data: (cats) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _category,
+              isExpanded: true,
+              icon: const Icon(Icons.expand_more, color: AppColors.onSurfaceVariant),
+              style: const TextStyle(fontSize: 18, color: AppColors.onSurface),
+              hint: Text(l10n.selectCategory,
+                  style: const TextStyle(color: AppColors.onSurfaceVariant)),
+              items: [
+                ...cats.map((cat) => DropdownMenuItem(
+                      value: cat.name,
+                      child: Row(
+                        children: [
+                          Icon(CategoryInfo.iconFor(cat.iconName),
+                              size: 20, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Text(l10n.isZh ? cat.nameZh : cat.name),
+                        ],
+                      ),
+                    )),
+                // "Add custom" option
+                const DropdownMenuItem(
+                  value: '__custom__',
+                  child: Row(
+                    children: [
+                      Icon(Icons.add, size: 20, color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Text('+ Custom'),
+                    ],
+                  ),
+                ),
+              ],
+              onChanged: (v) {
+                if (v == null) return;
+                if (v == '__custom__') {
+                  _onAddCategory();
+                } else {
+                  setState(() => _category = v);
+                }
+              },
+            ),
+          ),
+        );
+      },
+      loading: () => const SizedBox(
+        height: 48,
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<AssetCategory>(
-          value: _category,
-          isExpanded: true,
-          icon: const Icon(Icons.expand_more, color: AppColors.onSurfaceVariant),
-          style: const TextStyle(fontSize: 18, color: AppColors.onSurface),
-          items: AssetCategory.values
-              .map((cat) => DropdownMenuItem(
-                    value: cat,
-                    child: Row(
-                      children: [
-                        Icon(cat.icon, size: 20, color: AppColors.primary),
-                        const SizedBox(width: 8),
-                        Text(cat.displayName),
-                      ],
-                    ),
-                  ))
-              .toList(),
-          onChanged: (v) {
-            if (v != null) setState(() => _category = v);
-          },
+      error: (e, s) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
         ),
+        child: Text(_category),
       ),
     );
+  }
+
+  Future<void> _onAddCategory() async {
+    final result = await showAddCategoryDialog(context, ref);
+    if (result != null) {
+      setState(() => _category = result.name);
+    }
   }
 
   Widget _buildStatusToggle() {
@@ -548,9 +610,9 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          const Text(
-            'Mark as In Service',
-            style: TextStyle(
+          Text(
+            AppL10n.of(context).markInService,
+            style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: AppColors.onSurface,
@@ -573,6 +635,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   }
 
   Widget _buildSaveButton() {
+    final l10n = AppL10n.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       decoration: BoxDecoration(
@@ -596,8 +659,8 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
               : const Icon(Icons.save, size: 22),
           label: Text(
             _isSaving
-                ? 'Saving...'
-                : (_isEditing ? 'Update Asset' : 'Save Asset'),
+                ? l10n.saving
+                : (_isEditing ? l10n.updateAsset : l10n.saveAsset),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
           style: FilledButton.styleFrom(

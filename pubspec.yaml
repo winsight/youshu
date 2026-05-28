@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.8
 
   # State management
@@ -27,15 +29,20 @@ dependencies:
   dio: ^5.7.0
   webdav_client: ^1.2.0
 
+  # OAuth / Cloud Sync
+  google_sign_in: ^6.3.0
+  flutter_appauth: ^8.0.0
+
   # Images
   image_picker: ^1.1.2
   image: ^4.5.3
+  google_mlkit_subject_segmentation: ^0.0.3
 
   # Charts
   fl_chart: ^0.70.2
 
   # Utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   uuid: ^4.5.1
   shared_preferences: ^2.3.4
   flutter_secure_storage: ^9.2.4

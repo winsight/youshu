@@ -1,15 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/repository/statistics_repository.dart';
 import '../../providers/asset_providers.dart';
+import '../../core/l10n/app_locale.dart';
+import '../../data/models/category_model.dart';
+
+Future<DateTimeRange?> _showPeriodPicker(BuildContext context) async {
+  final l10n = AppL10n.of(context);
+  final now = DateTime.now();
+
+  final result = await showModalBottomSheet<String>(
+    context: context,
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              l10n.isZh ? '选择时间范围' : 'Select Period',
+              style: const TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.today),
+            title: Text(l10n.isZh ? '本月' : 'This Month'),
+            onTap: () => Navigator.pop(
+                ctx,
+                DateFormat('yyyy-MM-dd')
+                    .format(DateTime(now.year, now.month, 1))),
+          ),
+          ListTile(
+            leading: const Icon(Icons.view_week),
+            title: Text(l10n.isZh ? '近3个月' : 'Last 3 Months'),
+            onTap: () => Navigator.pop(
+                ctx,
+                DateFormat('yyyy-MM-dd')
+                    .format(DateTime(now.year, now.month - 2, 1))),
+          ),
+          ListTile(
+            leading: const Icon(Icons.date_range),
+            title: Text(l10n.isZh ? '近6个月' : 'Last 6 Months'),
+            onTap: () => Navigator.pop(
+                ctx,
+                DateFormat('yyyy-MM-dd')
+                    .format(DateTime(now.year, now.month - 5, 1))),
+          ),
+          ListTile(
+            leading: const Icon(Icons.calendar_view_month),
+            title: Text(l10n.isZh ? '近1年' : 'Last 1 Year'),
+            onTap: () => Navigator.pop(ctx, '1year'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.all_inclusive),
+            title: Text(l10n.isZh ? '全部' : 'All Time'),
+            onTap: () => Navigator.pop(ctx, 'all'),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.edit_calendar,
+                color: AppColors.primary),
+            title: Text(
+              l10n.isZh ? '自定义范围...' : 'Custom Range...',
+              style: const TextStyle(
+                  color: AppColors.primary, fontWeight: FontWeight.w600),
+            ),
+            onTap: () => Navigator.pop(ctx, '__custom__'),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+
+  if (result == null) return null;
+
+  if (result == '__custom__') {
+    // Open date range picker calendar
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: now,
+      initialDateRange: DateTimeRange(
+        start: DateTime(now.year, now.month, 1),
+        end: now,
+      ),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: Theme.of(ctx).colorScheme.copyWith(
+                primary: AppColors.primary,
+              ),
+        ),
+        child: child!,
+      ),
+    );
+    return picked;
+  }
+
+  if (result == 'all') return null;
+
+  // Parse the quick-select date and create a range
+  DateTime start;
+  if (result == '1year') {
+    start = DateTime(now.year - 1, now.month, 1);
+  } else {
+    start = DateTime.parse('$result-01');
+  }
+  return DateTimeRange(start: start, end: now);
+}
 
 class StatisticsScreen extends ConsumerWidget {
   const StatisticsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppL10n.of(context);
     final distributionAsync = ref.watch(categoryDistributionProvider);
     final summaryAsync = ref.watch(dashboardSummaryProvider);
 
@@ -17,14 +126,16 @@ class StatisticsScreen extends ConsumerWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            _buildHeader(),
+            _buildHeader(context, l10n),
             SliverPadding(
               padding: const EdgeInsets.all(16),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  _buildDistributionCard(distributionAsync),
+                  _buildDistributionCard(context, distributionAsync),
                   const SizedBox(height: 16),
-                  _buildLiquiditySummary(summaryAsync),
+                  _buildCategoryInsights(context, distributionAsync),
+                  const SizedBox(height: 16),
+                  _buildLiquiditySummary(context, summaryAsync),
                 ]),
               ),
             ),
@@ -34,7 +145,7 @@ class StatisticsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context, AppL10n l10n) {
     return SliverToBoxAdapter(
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
@@ -57,18 +168,18 @@ class StatisticsScreen extends ConsumerWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Portfolio',
-                      style: TextStyle(
+                    Text(
+                      l10n.portfolio,
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primary,
                         letterSpacing: 0.24,
                       ),
                     ),
-                    const Text(
-                      'Trends',
-                      style: TextStyle(
+                    Text(
+                      l10n.trends,
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: AppColors.onSurface,
@@ -81,12 +192,7 @@ class StatisticsScreen extends ConsumerWidget {
                     IconButton(
                       icon: const Icon(Icons.calendar_today,
                           color: AppColors.primary),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.search,
-                          color: AppColors.primary),
-                      onPressed: () {},
+                      onPressed: () => _showPeriodPicker(context),
                     ),
                   ],
                 ),
@@ -99,7 +205,7 @@ class StatisticsScreen extends ConsumerWidget {
   }
 
   Widget _buildDistributionCard(
-      AsyncValue<List<CategoryDistribution>> asyncDist) {
+      BuildContext context, AsyncValue<List<CategoryDistribution>> asyncDist) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -125,9 +231,9 @@ class StatisticsScreen extends ConsumerWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Asset Distribution',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).assetDistribution,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.onSurfaceVariant,
@@ -168,7 +274,7 @@ class StatisticsScreen extends ConsumerWidget {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  '${d.category.displayName} (${d.percentage.toStringAsFixed(0)}%)',
+                                  '${AppL10n.of(context).getCategoryName(d.category)} (${d.percentage.toStringAsFixed(0)}%)',
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
@@ -229,7 +335,90 @@ class StatisticsScreen extends ConsumerWidget {
     return AppColors.outline;
   }
 
-  Widget _buildLiquiditySummary(AsyncValue<DashboardSummary> asyncSummary) {
+  Widget _buildCategoryInsights(
+      BuildContext context, AsyncValue<List<CategoryDistribution>> asyncDist) {
+    final l10n = AppL10n.of(context);
+    return asyncDist.when(
+      data: (distributions) {
+        if (distributions.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                l10n.isZh ? '分类洞察' : 'Category Insights',
+                style: const TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.w600),
+              ),
+            ),
+            ...distributions.map((d) => _buildInsightRow(context, d)),
+          ],
+        );
+      },
+      loading: () =>
+          const SizedBox(height: 80, child: Center(child: CircularProgressIndicator())),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildInsightRow(BuildContext context, CategoryDistribution d) {
+    final l10n = AppL10n.of(context);
+    final catName = l10n.getCategoryName(d.category);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+        border: Border.all(color: AppColors.outlineVariant.withAlpha(80)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainer,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              CategoryInfo.iconFor(d.category),
+              color: AppColors.primary,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  catName,
+                  style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${d.count} ${l10n.isZh ? '件' : 'items'} · ${d.percentage.toStringAsFixed(0)}% ${l10n.isZh ? '占比' : 'of portfolio'}',
+                  style: const TextStyle(
+                    fontSize: 13, color: AppColors.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '¥${d.totalValue.toStringAsFixed(0)}',
+            style: const TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLiquiditySummary(
+      BuildContext context, AsyncValue<DashboardSummary> asyncSummary) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -249,9 +438,9 @@ class StatisticsScreen extends ConsumerWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Portfolio Liquidity',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).portfolioLiquidity,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.onSurfaceVariant,
@@ -272,21 +461,21 @@ class StatisticsScreen extends ConsumerWidget {
                   Row(
                     children: [
                       _buildMiniBar(
-                          'Active', summary.inServiceCount, AppColors.primary),
+                          AppL10n.of(context).inService, summary.inServiceCount, AppColors.primary),
                       const SizedBox(width: 16),
                       _buildMiniBar(
-                          'Retired', summary.retiredCount, AppColors.secondary),
+                          AppL10n.of(context).retired, summary.retiredCount, AppColors.secondary),
                       const SizedBox(width: 16),
                       _buildMiniBar(
-                          'Sold', summary.soldCount, AppColors.outline),
+                          AppL10n.of(context).sold, summary.soldCount, AppColors.outline),
                     ],
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Average Daily Cost',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).averageDailyCost,
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: AppColors.onSurfaceVariant,

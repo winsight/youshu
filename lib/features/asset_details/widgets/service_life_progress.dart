@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../data/models/asset.dart';
 import '../../../shared/widgets/progress_bar.dart';
 
@@ -11,6 +12,7 @@ class ServiceLifeProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final pct = (asset.progressRatio * 100).toInt();
 
     return Container(
@@ -30,9 +32,9 @@ class ServiceLifeProgress extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Service Life',
-                    style: TextStyle(
+                  Text(
+                    l10n.serviceLife,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppColors.onSurfaceVariant,
@@ -40,7 +42,7 @@ class ServiceLifeProgress extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${asset.daysUsed} Days Used',
+                    '${asset.daysUsed} ${l10n.daysUsed}',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -49,7 +51,7 @@ class ServiceLifeProgress extends StatelessWidget {
                 ],
               ),
               Text(
-                'Goal: ${asset.goalDays} Days (${asset.goalDays ~/ 365} yrs)',
+                '${l10n.goal}: ${asset.goalDays} ${l10n.isZh ? '天' : 'Days'} (${asset.goalDays ~/ 365} ${l10n.isZh ? '年' : 'yrs'})',
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -68,7 +70,7 @@ class ServiceLifeProgress extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Started: ${DateFormat('MMM d, y').format(asset.purchaseDate)}',
+                '${l10n.started}: ${DateFormat('MMM d, y').format(asset.purchaseDate)}',
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -76,7 +78,7 @@ class ServiceLifeProgress extends StatelessWidget {
                 ),
               ),
               Text(
-                '$pct% Completed',
+                '$pct% ${l10n.completed}',
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,

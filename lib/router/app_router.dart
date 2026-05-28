@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../core/l10n/app_locale.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/statistics/statistics_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/add_asset/add_asset_screen.dart';
 import '../features/asset_details/asset_details_screen.dart';
+import '../features/settings/webdav_settings_screen.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 final shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -39,6 +41,12 @@ final appRouter = GoRouter(
           ),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/settings/webdav',
+      name: 'settings-webdav',
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const WebDavSettingsScreen(),
     ),
     GoRoute(
       path: '/add-asset',
@@ -81,6 +89,7 @@ class _AppShell extends StatelessWidget {
 class _BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final location = GoRouterState.of(context).uri.toString();
 
     int currentIndex;
@@ -104,21 +113,21 @@ class _BottomNavBar extends StatelessWidget {
             context.go('/settings');
         }
       },
-      destinations: const [
+      destinations: [
         NavigationDestination(
-          icon: Icon(Icons.inventory_2_outlined),
-          selectedIcon: Icon(Icons.inventory_2),
-          label: 'Assets',
+          icon: const Icon(Icons.inventory_2_outlined),
+          selectedIcon: const Icon(Icons.inventory_2),
+          label: l10n.assets,
         ),
         NavigationDestination(
-          icon: Icon(Icons.trending_up_outlined),
-          selectedIcon: Icon(Icons.trending_up),
-          label: 'Trends',
+          icon: const Icon(Icons.trending_up_outlined),
+          selectedIcon: const Icon(Icons.trending_up),
+          label: l10n.trends,
         ),
         NavigationDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings),
-          label: 'Settings',
+          icon: const Icon(Icons.settings_outlined),
+          selectedIcon: const Icon(Icons.settings),
+          label: l10n.settings,
         ),
       ],
     );

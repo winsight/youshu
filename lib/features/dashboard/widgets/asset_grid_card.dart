@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../data/models/asset.dart';
+import '../../../data/models/category_model.dart';
 import '../../../shared/widgets/status_badge.dart';
 import '../../../shared/widgets/progress_bar.dart';
 
@@ -13,6 +15,7 @@ class AssetGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return GestureDetector(
       onTap: () => context.push('/asset/${asset.id}'),
       child: Container(
@@ -31,14 +34,16 @@ class AssetGridCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image area
             Expanded(
               flex: 3,
               child: Stack(
                 children: [
                   Container(
                     width: double.infinity,
-                    color: AppColors.surfaceContainer,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainer,
+                    ),
+                    clipBehavior: Clip.antiAlias,
                     child: _buildImage(),
                   ),
                   Positioned(
@@ -49,7 +54,6 @@ class AssetGridCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Info area
             Expanded(
               flex: 2,
               child: Padding(
@@ -69,7 +73,7 @@ class AssetGridCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '¥${asset.purchasePrice.toStringAsFixed(0)} | Used ${asset.daysUsed} days',
+                      '¥${asset.purchasePrice.toStringAsFixed(0)} | ${l10n.daysUsed} ${asset.daysUsed}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -79,7 +83,7 @@ class AssetGridCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '¥${asset.dailyCost.toStringAsFixed(2)}/day',
+                      '¥${asset.dailyCost.toStringAsFixed(2)}/${l10n.isZh ? '天' : 'day'}',
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -112,10 +116,14 @@ class AssetGridCard extends StatelessWidget {
     }
     return Center(
       child: Icon(
-        asset.category.icon,
+        _categoryIcon(),
         size: 48,
         color: AppColors.outlineVariant,
       ),
     );
+  }
+
+  IconData _categoryIcon() {
+    return CategoryInfo.iconFor(asset.category);
   }
 }

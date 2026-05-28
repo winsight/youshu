@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/app_colors.dart';
-import '../../services/webdav_service.dart';
+import '../../core/l10n/app_locale.dart';
+import '../../services/cloud_storage.dart';
+import '../../services/cloud_storage_factory.dart';
 import '../../data/repository/sync_repository.dart';
 import '../../providers/database_provider.dart';
+import '../../providers/asset_providers.dart';
+import '../../providers/locale_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -15,357 +19,264 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  final _urlController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _storage = const FlutterSecureStorage();
   bool _isConfigured = false;
-  bool _isLoading = false;
-  bool _isTesting = false;
+  bool _isSyncing = false;
   String? _lastSyncInfo;
+  StorageProviderType _providerType = StorageProviderType.webdav;
 
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    _loadStatus();
   }
 
-  Future<void> _loadSettings() async {
+  Future<void> _doSync() async {
+    setState(() => _isSyncing = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final config = StorageConfig(
+        type: _providerType,
+        url: prefs.getString('webdav_url'),
+        username: prefs.getString('webdav_username'),
+      );
+      final syncRepo = SyncRepository(ref.read(assetRepositoryProvider));
+      syncRepo.configure(config);
+      final result = await syncRepo.sync();
+
+      if (mounted) {
+        if (result.success) {
+          ref.invalidate(assetListProvider);
+          ref.invalidate(filteredAssetsProvider);
+          ref.invalidate(dashboardSummaryProvider);
+          ref.invalidate(categoryDistributionProvider);
+          setState(() {
+            final dt = result.syncTime ?? DateTime.now();
+            _lastSyncInfo = '${dt.month}/${dt.day} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+          });
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result.success
+              ? '${AppL10n.of(context).syncComplete} (↑${result.pushed} ↓${result.pulled})'
+              : '${result.error}'),
+          backgroundColor: result.success ? AppColors.primary : AppColors.error,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
+  }
+
+  Future<void> _loadStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final url = prefs.getString('webdav_url');
-    final username = prefs.getString('webdav_username');
-    final password = await _storage.read(key: 'webdav_password');
-
-    if (url != null && username != null && password != null) {
-      setState(() {
-        _urlController.text = url;
-        _usernameController.text = username;
-        _passwordController.text = password;
-        _isConfigured = true;
-      });
-    }
-
+    final token = prefs.getString('storage_token');
     final lastSync = prefs.getString('last_sync_time');
-    if (lastSync != null) {
+    final providerStr = prefs.getString('storage_provider');
+    if (providerStr != null && mounted) {
       setState(() {
-        _lastSyncInfo = 'Last sync: ${_formatDate(DateTime.parse(lastSync))}';
+        _providerType = StorageProviderType.values.firstWhere(
+          (t) => t.name == providerStr,
+          orElse: () => StorageProviderType.webdav,
+        );
       });
     }
-  }
-
-  @override
-  void dispose() {
-    _urlController.dispose();
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _saveConfig() async {
-    final url = _urlController.text.trim();
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (url.isEmpty || username.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
-      return;
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('webdav_url', url);
-    await prefs.setString('webdav_username', username);
-    await _storage.write(key: 'webdav_password', value: password);
-
-    setState(() => _isConfigured = true);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('WebDAV configuration saved')),
-      );
-    }
-  }
-
-  Future<void> _testConnection() async {
-    setState(() => _isTesting = true);
-    final config = WebDavConfig(
-      url: _urlController.text.trim(),
-      username: _usernameController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
-    final service = WebDavService(config: config);
-    final ok = await service.testConnection();
-
-    if (mounted) {
-      setState(() => _isTesting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(ok ? 'Connection successful!' : 'Connection failed'),
-          backgroundColor: ok ? AppColors.primary : AppColors.error,
-        ),
-      );
-    }
-  }
-
-  Future<void> _syncNow() async {
-    setState(() => _isLoading = true);
-
-    final config = WebDavConfig(
-      url: _urlController.text.trim(),
-      username: _usernameController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
-
-    final assetRepo = ref.read(assetRepositoryProvider);
-    final syncRepo = SyncRepository(assetRepo);
-    syncRepo.configure(config);
-
-    final result = await syncRepo.sync();
-
     if (mounted) {
       setState(() {
-        _isLoading = false;
-        _lastSyncInfo =
-            'Last sync: ${_formatDate(DateTime.now())} (push: ${result.pushed}, pull: ${result.pulled})';
+        _isConfigured = (url != null && url.isNotEmpty) || (token != null && token.isNotEmpty);
+        if (lastSync != null) {
+          final dt = DateTime.parse(lastSync);
+          _lastSyncInfo = '${dt.month}/${dt.day} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+        }
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.success
-              ? 'Sync complete (push: ${result.pushed}, pull: ${result.pulled})'
-              : 'Sync failed: ${result.error}'),
-          backgroundColor:
-              result.success ? AppColors.primary : AppColors.error,
-        ),
-      );
     }
-  }
-
-  String _formatDate(DateTime dt) {
-    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final selectedLang = ref.watch(localeProvider);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
         children: [
-          // WebDAV Section
-          const Text(
-            'WebDAV Sync',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
-            ),
-          ),
           const SizedBox(height: 8),
-          const Text(
-            'Configure your WebDAV server for cloud sync (Nextcloud, Synology, etc.)',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // URL
-          TextFormField(
-            controller: _urlController,
-            decoration: const InputDecoration(
-              labelText: 'WebDAV URL',
-              hintText: 'https://your-server.com/remote.php/dav/files/user/',
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Username
-          TextFormField(
-            controller: _usernameController,
-            decoration: const InputDecoration(labelText: 'Username'),
-          ),
-          const SizedBox(height: 16),
-
-          // Password
-          TextFormField(
-            controller: _passwordController,
-            obscureText: true,
-            decoration: const InputDecoration(labelText: 'Password'),
+          // Language
+          _SectionHeader(title: l10n.language),
+          _Card(
+            children: AppLanguage.values.map((lang) {
+              final isSelected = selectedLang == lang;
+              return InkWell(
+                onTap: () => ref.read(localeProvider.notifier).setLanguage(lang),
+                borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(lang.displayName, style: const TextStyle(fontSize: 16, color: AppColors.onSurface))),
+                      if (isSelected) const Icon(Icons.check_circle, color: AppColors.primary, size: 22),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
           ),
           const SizedBox(height: 24),
 
-          // Action buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _isTesting ? null : _testConnection,
-                  child: _isTesting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child:
-                              CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Test Connection'),
-                ),
+          // Cloud Sync
+          _SectionHeader(title: l10n.isZh ? '云同步' : 'Cloud Sync'),
+          if (_lastSyncInfo != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text(
+                '${l10n.isZh ? '上次同步' : 'Last sync'}: $_lastSyncInfo',
+                style: const TextStyle(fontSize: 12, color: AppColors.primary),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: _saveConfig,
-                  child: const Text('Save Config'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-
-          // Sync Section
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-              border:
-                  Border.all(color: AppColors.outlineVariant.withAlpha(80)),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      'Sync Status',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.onSurfaceVariant,
-                        letterSpacing: 0.24,
+          _Card(
+            children: StorageProviderType.values.map((provider) {
+              return InkWell(
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('storage_provider', provider.name);
+                  setState(() => _providerType = provider);
+                  await context.push('/settings/webdav');
+                  _loadStatus();
+                },
+                borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Row(
+                    children: [
+                      Radio<StorageProviderType>(
+                        value: provider,
+                        groupValue: _providerType,
+                        onChanged: (v) async {
+                          if (v == null) return;
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString('storage_provider', v.name);
+                          setState(() => _providerType = v);
+                        },
+                        activeColor: AppColors.primary,
                       ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: _isConfigured ? AppColors.primary : AppColors.outline,
-                        shape: BoxShape.circle,
+                      Icon(provider.iconData, size: 22, color: AppColors.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l10n.isZh ? provider.chineseName : provider.displayName,
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.onSurface)),
+                            const SizedBox(height: 2),
+                            Text(_providerDesc(provider, l10n.isZh),
+                                style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _isConfigured ? 'Configured' : 'Not configured',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: _isConfigured
-                            ? AppColors.primary
-                            : AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-                if (_lastSyncInfo != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _lastSyncInfo!,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed:
-                        (!_isConfigured || _isLoading) ? null : _syncNow,
-                    icon: _isLoading
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child:
-                                CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.sync, size: 18),
-                    label: Text(_isLoading ? 'Syncing...' : 'Sync Now'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primaryContainer,
-                      foregroundColor: AppColors.onPrimaryContainer,
-                    ),
+                      const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant, size: 20),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // About Section
-          const Text(
-            'About',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
-            ),
+              );
+            }).toList(),
           ),
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-            ),
-            child: const Column(
-              children: [
-                _AboutRow(label: 'App Name', value: 'Asset Sum'),
-                Divider(color: AppColors.outlineVariant),
-                _AboutRow(label: 'Version', value: '1.0.0'),
-                Divider(color: AppColors.outlineVariant),
-                _AboutRow(label: 'Data Storage', value: 'Local + WebDAV Sync'),
-              ],
+
+          // Sync button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox(
+              height: 48,
+              child: FilledButton.icon(
+                onPressed: (_isSyncing || !_isConfigured) ? null : _doSync,
+                icon: _isSyncing
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.sync, size: 20),
+                label: Text(_isSyncing
+                    ? (AppL10n.of(context).isZh ? '同步中...' : 'Syncing...')
+                    : (AppL10n.of(context).isZh ? '立即同步' : 'Sync Now')),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignTokens.radiusMd)),
+                ),
+              ),
             ),
           ),
+          const SizedBox(height: 32),
+
+          // About
+          _SectionHeader(title: l10n.about),
+          _Card(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _AboutRow(icon: Icons.info_outline, label: 'App Name', value: '有数'),
+              const Divider(color: AppColors.outlineVariant, height: 1),
+              _AboutRow(icon: Icons.tag, label: 'Version', value: '1.0.0'),
+              const Divider(color: AppColors.outlineVariant, height: 1),
+              _AboutRow(icon: Icons.storage_outlined, label: 'Data Storage', value: 'Local + Cloud'),
+            ],
+          ),
+          const SizedBox(height: 100),
         ],
       ),
+    );
+  }
+
+  String _providerDesc(StorageProviderType type, bool isZh) {
+    switch (type) {
+      case StorageProviderType.webdav:
+        return isZh ? '支持 Nextcloud / 坚果云 / Synology' : 'Nextcloud / Jianguoyun / Synology';
+      case StorageProviderType.onedrive:
+        return isZh ? '微软个人/企业账户登录' : 'Microsoft personal/business account';
+      case StorageProviderType.googledrive:
+        return isZh ? 'Google 账户授权登录' : 'Google account authorization';
+    }
+  }
+}
+
+class _Card extends StatelessWidget {
+  final List<Widget> children;
+  final EdgeInsetsGeometry? padding;
+  const _Card({required this.children, this.padding});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: padding,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+      ),
+      child: Column(children: children),
     );
   }
 }
 
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurfaceVariant, letterSpacing: 0.5)),
+      );
+}
+
 class _AboutRow extends StatelessWidget {
+  final IconData icon;
   final String label;
   final String value;
-
-  const _AboutRow({required this.label, required this.value});
-
+  const _AboutRow({required this.icon, required this.label, required this.value});
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(children: [
+          Icon(icon, size: 18, color: AppColors.onSurfaceVariant),
+          const SizedBox(width: 10),
+          Text(label, style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant)),
+          const Spacer(),
+          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.onSurface)),
+        ]),
+      );
 }

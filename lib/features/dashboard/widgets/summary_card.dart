@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../data/repository/statistics_repository.dart';
 
 class SummaryCard extends StatelessWidget {
@@ -9,6 +10,7 @@ class SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -26,9 +28,9 @@ class SummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text(
-                'Asset Overview',
-                style: TextStyle(
+              Text(
+                l10n.assetOverview,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.onSurfaceVariant,
@@ -59,13 +61,13 @@ class SummaryCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _StatItem(
-                  label: 'Total Value',
+                  label: l10n.totalValue,
                   value: _formatCurrency(summary.totalValue),
                 ),
               ),
               Expanded(
                 child: _StatItem(
-                  label: 'Daily Avg',
+                  label: l10n.dailyAvg,
                   value: _formatCurrency(summary.dailyAvgCost),
                 ),
               ),
@@ -137,27 +139,28 @@ class _StatusBreakdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final total = inService + retired + sold;
     if (total == 0) return const SizedBox.shrink();
 
     return Row(
       children: [
         _StatusItem(
-          label: 'In Service',
+          label: l10n.inService,
           count: inService,
           total: total,
           color: AppColors.primary,
         ),
         const SizedBox(width: 16),
         _StatusItem(
-          label: 'Retired',
+          label: l10n.retired,
           count: retired,
           total: total,
           color: const Color(0xFFf4a261),
         ),
         const SizedBox(width: 16),
         _StatusItem(
-          label: 'Sold',
+          label: l10n.sold,
           count: sold,
           total: total,
           color: AppColors.outline,

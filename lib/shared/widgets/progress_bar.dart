@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_locale.dart';
 
 class DailyCostProgressBar extends StatelessWidget {
   final double progressRatio;
@@ -70,7 +71,9 @@ class DailyCostProgressBar extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          goalAchieved ? 'Goal achieved' : '$daysLeft days left',
+          goalAchieved
+              ? AppL10n.of(context).goalAchieved
+              : '$daysLeft ${AppL10n.of(context).daysLeft}',
           textAlign: TextAlign.right,
           style: TextStyle(
             fontSize: 9,

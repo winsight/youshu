@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/l10n/app_locale.dart';
+import '../../data/models/category_model.dart';
 import '../../providers/asset_providers.dart';
 import '../../providers/database_provider.dart';
 import 'widgets/service_life_progress.dart';
@@ -16,6 +18,7 @@ class AssetDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppL10n.of(context);
     final assetAsync = ref.watch(assetDetailProvider(assetId));
 
     return Scaffold(
@@ -25,7 +28,7 @@ class AssetDetailsScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Asset Details'),
+        title: Text(l10n.assetDetails),
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
@@ -36,17 +39,17 @@ class AssetDetailsScreen extends ConsumerWidget {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Delete Asset'),
-                    content: const Text('This action cannot be undone.'),
+                    title: Text(l10n.deleteAsset),
+                    content: Text(l10n.deleteConfirm),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel'),
+                        child: Text(l10n.cancel),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child:
-                            const Text('Delete', style: TextStyle(color: AppColors.error)),
+                        child: Text(l10n.delete,
+                            style: const TextStyle(color: AppColors.error)),
                       ),
                     ],
                   ),
@@ -55,13 +58,19 @@ class AssetDetailsScreen extends ConsumerWidget {
                   await ref
                       .read(assetRepositoryProvider)
                       .deleteAsset(assetId);
+                  // 刷新所有相关 provider，确保 UI 立即反映删除
+                  ref.invalidate(assetListProvider);
+                  ref.invalidate(filteredAssetsProvider);
+                  ref.invalidate(dashboardSummaryProvider);
+                  ref.invalidate(categoryDistributionProvider);
+                  ref.invalidate(assetDetailProvider(assetId));
                   if (context.mounted) context.pop();
                 }
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(value: 'edit', child: Text('Edit')),
-              const PopupMenuItem(value: 'delete', child: Text('Delete')),
+              PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
+              PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
             ],
           ),
         ],
@@ -69,7 +78,7 @@ class AssetDetailsScreen extends ConsumerWidget {
       body: assetAsync.when(
         data: (asset) {
           if (asset == null) {
-            return const Center(child: Text('Asset not found'));
+            return Center(child: Text(l10n.assetNotFound));
           }
           return _AssetDetailContent(asset: asset);
         },
@@ -90,7 +99,7 @@ class _AssetDetailContent extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          _buildHeroSection(),
+          _buildHeroSection(context),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: ServiceLifeProgress(asset: asset),
@@ -110,7 +119,8 @@ class _AssetDetailContent extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroSection() {
+  Widget _buildHeroSection(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
       decoration: BoxDecoration(
@@ -128,15 +138,15 @@ class _AssetDetailContent extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            width: double.infinity,
-            height: 280,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+            child: Container(
+              width: double.infinity,
+              height: 280,
+              margin: const EdgeInsets.symmetric(horizontal: 8),
               color: AppColors.surfaceContainer,
+              child: _buildImage(),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: _buildImage(),
           ),
           const SizedBox(height: 16),
           Text(
@@ -151,14 +161,17 @@ class _AssetDetailContent extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildCostItem('Original Cost', '¥${asset.purchasePrice.toStringAsFixed(0)}'),
+              _buildCostItem(
+                  l10n.originalCost,
+                  '¥${asset.purchasePrice.toStringAsFixed(0)}'),
               Container(
                 width: 1,
                 height: 24,
                 color: AppColors.outlineVariant,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              _buildCostItem('Daily Cost', '¥${asset.dailyCost.toStringAsFixed(2)}/day'),
+              _buildCostItem(l10n.dailyCost,
+                  '¥${asset.dailyCost.toStringAsFixed(2)}/${l10n.isZh ? '天' : 'day'}'),
             ],
           ),
         ],
@@ -170,12 +183,14 @@ class _AssetDetailContent extends StatelessWidget {
     if (asset.imagePath != null && File(asset.imagePath!).existsSync()) {
       return Image.file(
         File(asset.imagePath!),
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
       );
     }
     return Center(
       child: Icon(
-        asset.category.icon,
+        CategoryInfo.iconFor(asset.category),
         size: 80,
         color: AppColors.outlineVariant,
       ),

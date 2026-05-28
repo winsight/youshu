@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../data/models/asset.dart';
 
 class PurchaseSpecsList extends StatelessWidget {
@@ -9,6 +10,7 @@ class PurchaseSpecsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
@@ -18,14 +20,14 @@ class PurchaseSpecsList extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
-                    'PURCHASE SPECS',
-                    style: TextStyle(
+                    l10n.purchaseSpecs.toUpperCase(),
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppColors.onSurfaceVariant,
@@ -33,16 +35,17 @@ class PurchaseSpecsList extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(Icons.info_outline, size: 16, color: AppColors.onSurfaceVariant),
+                const Icon(Icons.info_outline,
+                    size: 16, color: AppColors.onSurfaceVariant),
               ],
             ),
           ),
           if (asset.merchant != null)
-            _buildSpecRow('Merchant', asset.merchant!),
+            _buildSpecRow(l10n.merchant, asset.merchant!),
           if (asset.warranty != null)
-            _buildSpecRow('Warranty', asset.warranty!),
-          _buildSpecRow('Category', asset.category.displayName),
-          _buildSpecRow('Days Used', '${asset.daysUsed} days'),
+            _buildSpecRow(l10n.warranty, asset.warranty!),
+          _buildSpecRow(l10n.category, l10n.getCategoryName(asset.category)),
+          _buildSpecRow(l10n.daysUsed, '${asset.daysUsed} ${l10n.isZh ? '天' : 'days'}'),
         ],
       ),
     );

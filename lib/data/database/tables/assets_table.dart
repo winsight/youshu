@@ -14,6 +14,7 @@ class Assets extends Table {
   TextColumn get imagePath => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
   IntColumn get syncVersion => integer().withDefault(const Constant(0))();
 
   @override
