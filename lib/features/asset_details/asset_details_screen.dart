@@ -134,15 +134,16 @@ class _AssetDetailContent extends StatelessWidget {
       ),
       child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(36),
-            child: Container(
-              width: double.infinity,
-              height: 280,
-              margin: const EdgeInsets.symmetric(horizontal: 8),
+          Container(
+            width: double.infinity,
+            height: 280,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
               color: colors.surfaceContainerLowest,
-              child: Center(child: _buildImage()),
+              borderRadius: BorderRadius.circular(28),
             ),
+            clipBehavior: Clip.antiAlias,
+            child: Center(child: _buildImage()),
           ),
           const SizedBox(height: 16),
           Text(

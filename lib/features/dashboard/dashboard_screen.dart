@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/l10n/app_locale.dart';
 import '../../providers/asset_providers.dart';
+import '../../providers/database_provider.dart';
 import '../../shared/widgets/states.dart';
 import 'widgets/summary_card.dart';
 import 'widgets/category_filter_bar.dart';
@@ -22,6 +23,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final _searchController = TextEditingController();
   bool _showShadow = false;
   bool _showSearch = false;
+  bool _selectMode = false;
+  final _selectedIds = <String>{};
 
   @override
   void initState() {
@@ -178,8 +181,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: SubFilterChips(
               selectedStatus: filter.status,
-              onSelected: (status) =>
-                  ref.read(filterStateProvider.notifier).setStatus(status),
+              onSelected: (status) => ref.read(filterStateProvider.notifier).setStatus(status),
+              selectMode: _selectMode,
+              onToggleSelect: () => setState(() { _selectMode = !_selectMode; _selectedIds.clear(); }),
             ),
           ),
           Expanded(
@@ -201,11 +205,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     crossAxisCount: 2,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: 0.68,
+                    childAspectRatio: 0.72,
                   ),
                   itemCount: assets.length,
-                  itemBuilder: (context, index) =>
-                      AssetGridCard(asset: assets[index]),
+                  itemBuilder: (context, index) {
+                    final a = assets[index];
+                    return GestureDetector(
+                      onLongPress: () {
+                        if (!_selectMode) {
+                          setState(() => _selectMode = true);
+                          _selectedIds.add(a.id);
+                        }
+                      },
+                      onTap: _selectMode
+                          ? () => setState(() => _selectedIds.contains(a.id) ? _selectedIds.remove(a.id) : _selectedIds.add(a.id))
+                          : () => context.push('/asset/${a.id}'),
+                      child: Stack(
+                        children: [
+                          AssetGridCard(asset: a),
+                          if (_selectMode)
+                            Positioned(
+                              top: 4, right: 4,
+                              child: Container(
+                                width: 24, height: 24,
+                                decoration: BoxDecoration(
+                                  color: _selectedIds.contains(a.id) ? AppColors.primary : Colors.white70,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: _selectedIds.contains(a.id) ? AppColors.primary : Colors.grey, width: 2),
+                                ),
+                                child: _selectedIds.contains(a.id) ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 );
               },
               loading: () =>
@@ -215,10 +249,59 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/add-asset'),
-        child: const Icon(Icons.add, size: 32),
-      ),
+      floatingActionButton: _selectMode
+          ? null
+          : FloatingActionButton(
+              onPressed: () => context.push('/add-asset'),
+              child: const Icon(Icons.add, size: 32),
+            ),
+      bottomSheet: _selectMode && _selectedIds.isNotEmpty
+          ? Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                border: const Border(top: BorderSide(color: AppColors.outlineVariant)),
+              ),
+              child: Row(
+                children: [
+                  Text('${l10n.isZh ? '已选择' : 'Selected'} ${_selectedIds.length} ${l10n.isZh ? '项' : 'items'}'),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () => setState(() { _selectMode = false; _selectedIds.clear(); }),
+                    child: Text(l10n.cancel),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(l10n.deleteAsset),
+                          content: Text('${l10n.isZh ? '确定删除' : 'Delete'} ${_selectedIds.length} ${l10n.isZh ? '项资产？' : 'assets?'}'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.delete, style: const TextStyle(color: AppColors.error))),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        for (final id in _selectedIds) {
+                          await ref.read(assetRepositoryProvider).deleteAsset(id);
+                        }
+                        ref.invalidate(assetListProvider);
+                        ref.invalidate(filteredAssetsProvider);
+                        ref.invalidate(dashboardSummaryProvider);
+                        setState(() { _selectMode = false; _selectedIds.clear(); });
+                      }
+                    },
+                    icon: const Icon(Icons.delete, size: 18, color: Colors.white),
+                    label: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                  ),
+                ],
+              ),
+            )
+          : null,
     );
   }
 }

@@ -32,7 +32,7 @@ class Asset {
     required this.purchasePrice,
     required this.purchaseDate,
     this.status = AssetStatus.inService,
-    this.goalDays = 1095,
+    this.goalDays = 0,
     this.imagePath,
     this.stickerImagePath,
     this.notes,
@@ -52,11 +52,12 @@ class Asset {
   }
 
   double get dailyCost => purchasePrice / daysUsed;
-  double get progressRatio => (daysUsed / goalDays).clamp(0.0, 1.0);
-  int get daysLeft => (goalDays - daysUsed).clamp(0, goalDays);
-  double get depreciation => purchasePrice * progressRatio;
+  bool get hasGoal => goalDays > 0;
+  double get progressRatio => hasGoal ? (daysUsed / goalDays).clamp(0.0, 1.0) : 0.5;
+  int? get daysLeft => hasGoal ? (goalDays - daysUsed).clamp(0, goalDays) : null;
+  double get depreciation => hasGoal ? purchasePrice * progressRatio : 0;
   double get resaleValue => purchasePrice - depreciation;
-  bool get goalAchieved => daysUsed >= goalDays;
+  bool get goalAchieved => hasGoal && daysUsed >= goalDays;
 
   Asset copyWith({
     String? id,

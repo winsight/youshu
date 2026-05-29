@@ -6,7 +6,8 @@ class AssetCard extends StatelessWidget {
   final int daysUsed;
   final double dailyCost;
   final double progressPercent; // 0.0 - 100.0
-  final int? remainingDays; // null = 已达成
+  final int? remainingDays;
+  final bool hasGoal;
   final String status; // "服役中" / "已退役" / "已出售"
   final bool isActive;
   final Widget imageWidget;
@@ -19,6 +20,7 @@ class AssetCard extends StatelessWidget {
     required this.dailyCost,
     required this.progressPercent,
     required this.remainingDays,
+    this.hasGoal = true,
     required this.status,
     required this.isActive,
     required this.imageWidget,
@@ -86,7 +88,7 @@ class AssetCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          _ProgressBar(percent: progressPercent, remainingDays: remainingDays),
+          _ProgressBar(percent: progressPercent, remainingDays: remainingDays, hasGoal: hasGoal),
         ],
       ),
     );
@@ -176,17 +178,19 @@ class _StatusBadge extends StatelessWidget {
 class _ProgressBar extends StatelessWidget {
   final double percent; // 0-100
   final int? remainingDays;
-  const _ProgressBar({required this.percent, this.remainingDays});
+  final bool hasGoal;
+  const _ProgressBar({required this.percent, this.remainingDays, this.hasGoal = true});
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final clamped = percent.clamp(0.0, 100.0) / 100.0;
-    final isGoal = remainingDays == null || remainingDays! <= 0;
+    final noGoal = !hasGoal;
+    final isGoal = hasGoal && (remainingDays == null || remainingDays! <= 0);
 
     return Column(
       children: [
-        SizedBox(
+        if (hasGoal) SizedBox(
           height: 20, // 给三角留空间（三角高度 ~6px + 间距）
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -223,13 +227,13 @@ class _ProgressBar extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Triangle indicator (▼)
+                  // Triangle indicator (▼) — 随主题色
                   Positioned(
                     left: triX - 5,
                     top: 0,
                     child: CustomPaint(
                       size: const Size(10, 7),
-                      painter: _TrianglePainter(),
+                      painter: _TrianglePainter(color: colors.onSurface),
                     ),
                   ),
                 ],
@@ -240,10 +244,14 @@ class _ProgressBar extends StatelessWidget {
         const SizedBox(height: 2),
         Align(
           child: Text(
-            isGoal ? '已达成目标' : '还剩 $remainingDays 天',
+            noGoal
+                ? '无目标'
+                : (isGoal ? '已达成目标' : '还剩 $remainingDays 天'),
             style: TextStyle(
               fontSize: 11,
-              color: isGoal ? const Color(0xFFBCE038) : colors.onSurfaceVariant,
+              color: noGoal
+                  ? colors.onSurfaceVariant
+                  : (isGoal ? const Color(0xFFBCE038) : colors.onSurfaceVariant),
             ),
           ),
         ),
@@ -252,12 +260,15 @@ class _ProgressBar extends StatelessWidget {
   }
 }
 
-/// 绘制向下的黑色小三角 ▼
+/// 绘制向下的三角指示器 ▼ — 跟随主题色
 class _TrianglePainter extends CustomPainter {
+  _TrianglePainter({required this.color});
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF1D1D1F)
+      ..color = color
       ..style = PaintingStyle.fill;
 
     final path = Path()

@@ -37,6 +37,8 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
 
   DateTime _purchaseDate = DateTime.now();
   String _category = 'electronics';
+  int _goalYears = 0;
+  int _goalDays = 0;
   AssetStatus _status = AssetStatus.inService;
   File? _imageFile;
   bool _isSaving = false;
@@ -222,6 +224,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
         purchasePrice: price,
         purchaseDate: _purchaseDate,
         status: _status,
+        goalDays: _goalYears > 0 ? _goalYears * 365 : (_goalDays > 0 ? _goalDays : 0),
         notes: _notesController.text.trim().isEmpty
             ? null
             : _notesController.text.trim(),
@@ -557,6 +560,40 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildFieldLabel(l10n.isZh ? '目标使用时间' : 'Goal (years)'),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  initialValue: _goalYears > 0 ? _goalYears.toString() : '',
+                  keyboardType: TextInputType.number,
+                  style: TextStyle(fontSize: 18, color: colors.onSurface),
+                  decoration: InputDecoration(
+                    hintText: l10n.isZh ? '0 = 不限' : '0 = no limit',
+                    hintStyle: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 16),
+                    suffixText: l10n.isZh ? '年' : 'yr',
+                  ),
+                  onChanged: (v) => _goalYears = int.tryParse(v) ?? 0,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  initialValue: _goalDays > 0 ? _goalDays.toString() : '',
+                  keyboardType: TextInputType.number,
+                  style: TextStyle(fontSize: 18, color: colors.onSurface),
+                  decoration: InputDecoration(
+                    hintText: '0',
+                    hintStyle: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 16),
+                    suffixText: l10n.isZh ? '天' : 'd',
+                  ),
+                  onChanged: (v) => _goalDays = int.tryParse(v) ?? 0,
                 ),
               ),
             ],

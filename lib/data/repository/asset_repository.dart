@@ -270,11 +270,20 @@ class AssetRepository implements ISyncDatabase {
 
   void _sortAssets(List<model.Asset> assets, String sortBy) {
     switch (sortBy) {
-      case 'dailyCost':
-        assets.sort((a, b) => b.dailyCost.compareTo(a.dailyCost));
+      case 'priceDesc':
+        assets.sort((a, b) => b.purchasePrice.compareTo(a.purchasePrice));
         break;
-      case 'name':
-        assets.sort((a, b) => a.name.compareTo(b.name));
+      case 'priceAsc':
+        assets.sort((a, b) => a.purchasePrice.compareTo(b.purchasePrice));
+        break;
+      case 'daysDesc':
+        assets.sort((a, b) => b.daysUsed.compareTo(a.daysUsed));
+        break;
+      case 'daysAsc':
+        assets.sort((a, b) => a.daysUsed.compareTo(b.daysUsed));
+        break;
+      case 'purchaseDateAsc':
+        assets.sort((a, b) => a.purchaseDate.compareTo(b.purchaseDate));
         break;
       case 'purchaseDate':
       default:

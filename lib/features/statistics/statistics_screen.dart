@@ -22,7 +22,7 @@ Future<DateTimeRange?> _showPeriodPicker(BuildContext context) async {
             padding: const EdgeInsets.all(16),
             child: Text(
               l10n.isZh ? '选择时间范围' : 'Select Period',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ),
           ListTile(
@@ -68,7 +68,7 @@ Future<DateTimeRange?> _showPeriodPicker(BuildContext context) async {
             leading: const Icon(Icons.edit_calendar, color: AppColors.primary),
             title: Text(
               l10n.isZh ? '自定义范围...' : 'Custom Range...',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w600,
               ),
@@ -150,58 +150,44 @@ class StatisticsScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context, AppL10n l10n) {
+    final colors = Theme.of(context).colorScheme;
     return SliverToBoxAdapter(
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.primary.withAlpha(30), AppColors.background],
+          gradient: RadialGradient(
+            center: Alignment.topLeft,
+            colors: [AppColors.primary.withAlpha(25), colors.surface],
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.portfolio,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                        letterSpacing: 0.24,
-                      ),
-                    ),
-                    Text(
-                      l10n.trends,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                  ],
+                Text(
+                  l10n.trends,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: colors.onSurface,
+                  ),
                 ),
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.calendar_today,
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                       onPressed: () => _showPeriodPicker(context),
                     ),
                   ],
                 ),
-              ],
+              ], // outer Row children
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -241,10 +227,10 @@ class StatisticsScreen extends ConsumerWidget {
             children: [
               Text(
                 AppL10n.of(context).assetDistribution,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onSurfaceVariant,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 20),
@@ -283,10 +269,10 @@ class StatisticsScreen extends ConsumerWidget {
                               Expanded(
                                 child: Text(
                                   '${AppL10n.of(context).getCategoryName(d.category)} (${d.percentage.toStringAsFixed(0)}%)',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
-                                    color: AppColors.onSurface,
+                                    color: colors.onSurface,
                                   ),
                                 ),
                               ),
@@ -357,7 +343,7 @@ class StatisticsScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 l10n.isZh ? '分类洞察' : 'Category Insights',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
@@ -467,10 +453,10 @@ class StatisticsScreen extends ConsumerWidget {
             children: [
               Text(
                 AppL10n.of(context).portfolioLiquidity,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onSurfaceVariant,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 16),
@@ -479,10 +465,10 @@ class StatisticsScreen extends ConsumerWidget {
                 children: [
                   Text(
                     '¥${summary.dailyAvgCost.toStringAsFixed(2)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.onSurface,
+                      color: colors.onSurface,
                     ),
                   ),
                   Row(
@@ -511,10 +497,10 @@ class StatisticsScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(
                 AppL10n.of(context).averageDailyCost,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.onSurfaceVariant,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
             ],
@@ -552,10 +538,10 @@ class StatisticsScreen extends ConsumerWidget {
         const SizedBox(height: 4),
         Text(
           '$count',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 9,
             fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
+            color: Colors.white70,
           ),
         ),
       ],

@@ -25,8 +25,9 @@ class AssetGridCard extends StatelessWidget {
         originalPrice: asset.purchasePrice,
         daysUsed: asset.daysUsed,
         dailyCost: asset.dailyCost,
-        progressPercent: asset.progressRatio * 100,
-        remainingDays: asset.goalAchieved ? null : asset.daysLeft,
+        progressPercent: asset.hasGoal ? asset.progressRatio * 100 : 0,
+        remainingDays: asset.hasGoal ? asset.daysLeft : null,
+        hasGoal: asset.hasGoal,
         status: statusLabel,
         isActive: isActive,
         imageWidget: _buildImageWidget(),
@@ -50,7 +51,7 @@ class AssetGridCard extends StatelessWidget {
       child: Icon(
         CategoryInfo.iconFor(asset.category),
         size: 36,
-        color: Colors.grey.shade300,
+        color: Colors.grey,
       ),
     );
   }

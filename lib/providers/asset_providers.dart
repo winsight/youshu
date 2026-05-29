@@ -65,6 +65,15 @@ class FilterState {
 class FilterNotifier extends StateNotifier<FilterState> {
   FilterNotifier() : super(const FilterState());
 
+  static const sortOptions = {
+    'purchaseDate': '最新',
+    'purchaseDateAsc': '最旧',
+    'priceDesc': '价格↓',
+    'priceAsc': '价格↑',
+    'daysDesc': '使用最久',
+    'daysAsc': '使用最短',
+  };
+
   void setCategory(String? category) {
     state = state.copyWith(category: category, clearCategory: category == null);
   }
