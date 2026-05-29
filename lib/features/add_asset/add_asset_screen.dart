@@ -85,7 +85,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1024);
+    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 2048);
     if (picked != null) {
       setState(() => _imageFile = File(picked.path));
     }
@@ -160,6 +160,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
             ? null
             : _warrantyController.text.trim(),
         imagePath: imagePath,
+        stickerImagePath: _imageFile?.path.contains('_sticker') == true ? imagePath : null,
         createdAt: now,
         updatedAt: now,
       );

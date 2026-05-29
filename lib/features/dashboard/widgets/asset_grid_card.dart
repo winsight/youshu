@@ -1,12 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/l10n/app_locale.dart';
 import '../../../data/models/asset.dart';
+import '../../../data/models/asset_status.dart';
 import '../../../data/models/category_model.dart';
-import '../../../shared/widgets/status_badge.dart';
-import '../../../shared/widgets/progress_bar.dart';
+import '../../../shared/widgets/asset_card.dart';
 
 class AssetGridCard extends StatelessWidget {
   final Asset asset;
@@ -15,115 +13,52 @@ class AssetGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppL10n.of(context);
+    final isActive = asset.status == AssetStatus.inService;
+    final statusLabel = switch (asset.status) {
+      AssetStatus.inService => '服役中',
+      AssetStatus.retired => '已退役',
+      AssetStatus.sold => '已出售',
+    };
+    final goalDone = asset.goalAchieved;
+
     return GestureDetector(
       onTap: () => context.push('/asset/${asset.id}'),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(10),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 3,
-              child: Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainer,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: _buildImage(),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: StatusBadge(status: asset.status),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      asset.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '¥${asset.purchasePrice.toStringAsFixed(0)} | ${l10n.daysUsed} ${asset.daysUsed}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '¥${asset.dailyCost.toStringAsFixed(2)}/${l10n.isZh ? '天' : 'day'}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    const Spacer(),
-                    DailyCostProgressBar(
-                      progressRatio: asset.progressRatio,
-                      daysLeft: asset.daysLeft,
-                      goalAchieved: asset.goalAchieved,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+      child: AssetCard(
+        name: asset.name,
+        originalPrice: asset.purchasePrice,
+        daysUsed: asset.daysUsed,
+        dailyCost: asset.dailyCost,
+        progressPercent: asset.progressRatio * 100,
+        remainingDays: goalDone ? null : asset.daysLeft,
+        status: statusLabel,
+        isActive: isActive,
+        imageWidget: _buildImageWidget(),
       ),
     );
   }
 
-  Widget _buildImage() {
-    if (asset.imagePath != null && File(asset.imagePath!).existsSync()) {
-      return Image.file(
-        File(asset.imagePath!),
-        fit: BoxFit.cover,
-        width: double.infinity,
+  Widget _buildImageWidget() {
+    final imgPath = asset.stickerImagePath ?? asset.imagePath;
+    if (imgPath != null && File(imgPath).existsSync()) {
+      // 白色底让 PNG 透明部分自然融入卡片
+      return Container(
+        color: Colors.white,
+        child: Image.file(
+          File(imgPath),
+          fit: BoxFit.contain,
+          alignment: Alignment.topLeft,
+        ),
       );
     }
-    return Center(
-      child: Icon(
-        _categoryIcon(),
-        size: 48,
-        color: AppColors.outlineVariant,
+    return Container(
+      color: Colors.white,
+      child: Center(
+        child: Icon(
+          CategoryInfo.iconFor(asset.category),
+          size: 36,
+          color: Colors.grey.shade300,
+        ),
       ),
     );
-  }
-
-  IconData _categoryIcon() {
-    return CategoryInfo.iconFor(asset.category);
   }
 }

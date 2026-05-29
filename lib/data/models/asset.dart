@@ -10,6 +10,7 @@ class Asset {
   final AssetStatus status;
   final int goalDays;
   final String? imagePath;
+  final String? stickerImagePath;
   final String? notes;
   final String? merchant;
   final String? warranty;
@@ -33,6 +34,7 @@ class Asset {
     this.status = AssetStatus.inService,
     this.goalDays = 1095,
     this.imagePath,
+    this.stickerImagePath,
     this.notes,
     this.merchant,
     this.warranty,
@@ -65,6 +67,7 @@ class Asset {
     AssetStatus? status,
     int? goalDays,
     String? imagePath,
+    String? stickerImagePath,
     String? notes,
     String? merchant,
     String? warranty,
@@ -82,6 +85,7 @@ class Asset {
       status: status ?? this.status,
       goalDays: goalDays ?? this.goalDays,
       imagePath: imagePath ?? this.imagePath,
+      stickerImagePath: stickerImagePath ?? this.stickerImagePath,
       notes: notes ?? this.notes,
       merchant: merchant ?? this.merchant,
       warranty: warranty ?? this.warranty,
@@ -104,6 +108,7 @@ class Asset {
       'goalDays': goalDays,
       // 仅输出文件名，不暴露设备本地绝对路径
       'imagePath': imagePath != null ? imagePath!.split('/').last : null,
+      'stickerImagePath': stickerImagePath != null ? stickerImagePath!.split('/').last : null,
       'notes': notes,
       'merchant': merchant,
       'warranty': warranty,
@@ -137,6 +142,7 @@ class Asset {
       ),
       goalDays: json['goalDays'] as int? ?? 1095,
       imagePath: json['imagePath'] as String?,
+      stickerImagePath: json['stickerImagePath'] as String?,
       notes: json['notes'] as String?,
       merchant: json['merchant'] as String?,
       warranty: json['warranty'] as String?,

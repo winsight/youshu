@@ -134,26 +134,41 @@ class SyncService {
       pushed = allLocal.length;
       AppLogger.info('上传 data.json 完成: $pushed 条记录');
 
-      // ---- 7. 上传所有本地图片 ----（单张失败不中断，且不依赖 updatedAt 比较避免前期失败永不重试）
+      // ---- 7. 上传所有本地图片（含贴纸） ----
       int imagesUploaded = 0;
       for (final local in allLocal) {
-        if (local.isDeleted || local.imagePath == null) continue;
-        if (local.imagePath!.isEmpty) continue;
+        if (local.isDeleted) continue;
 
-        final imageFile = File(local.imagePath!);
-        if (!await imageFile.exists()) {
-          AppLogger.warn('本地图片不存在，跳过: ${local.imagePath}');
-          continue;
+        // 上传贴纸图（优先，因为更有展示价值）
+        if (local.stickerImagePath != null && local.stickerImagePath!.isNotEmpty) {
+          final stickerFile = File(local.stickerImagePath!);
+          if (await stickerFile.exists()) {
+            try {
+              final ext = local.stickerImagePath!.split('.').last;
+              await _remote.uploadFile(
+                  '$remoteImageDir/${local.id}_sticker.$ext', stickerFile);
+              imagesUploaded++;
+              AppLogger.info('上传贴纸图: ${local.id}_sticker.$ext');
+            } catch (e) {
+              AppLogger.warn('贴纸图上传失败 (${local.id}): $e');
+            }
+          }
         }
 
-        try {
-          final ext = local.imagePath!.split('.').last;
-          await _remote.uploadFile(
-              '$remoteImageDir/${local.id}.$ext', imageFile);
-          imagesUploaded++;
-          AppLogger.info('上传图片: ${local.id}.$ext');
-        } catch (e) {
-          AppLogger.warn('图片上传失败 (${local.id}): $e');
+        // 上传原图
+        if (local.imagePath != null && local.imagePath!.isNotEmpty) {
+          final imageFile = File(local.imagePath!);
+          if (await imageFile.exists()) {
+            try {
+              final ext = local.imagePath!.split('.').last;
+              await _remote.uploadFile(
+                  '$remoteImageDir/${local.id}.$ext', imageFile);
+              imagesUploaded++;
+              AppLogger.info('上传图片: ${local.id}.$ext');
+            } catch (e) {
+              AppLogger.warn('图片上传失败 (${local.id}): $e');
+            }
+          }
         }
       }
       AppLogger.info('图片上传完成: $imagesUploaded 张');
@@ -182,6 +197,17 @@ class SyncService {
 
     final appDir = await _getLocalImageDir();
 
+    // 先尝试下载贴纸图（_sticker.png）
+    final stickerFile = await _remote.downloadFile(
+      '$remoteImageDir/${remote.id}_sticker.png',
+      '$appDir/${remote.id}_sticker.png',
+    );
+    if (stickerFile != null && await stickerFile.exists()) {
+      await _localDb.update(remote.copyWith(stickerImagePath: stickerFile.path));
+      AppLogger.info('下载贴纸图成功: ${remote.id}_sticker.png');
+    }
+
+    // 再尝试下载原图
     for (final ext in ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'gif', 'bmp']) {
       final localPath = '$appDir/${remote.id}.$ext';
       final file = await _remote.downloadFile(
@@ -189,13 +215,12 @@ class SyncService {
         localPath,
       );
       if (file != null && await file.exists()) {
-        // 把下载后的本地路径写回数据库
         await _localDb.update(remote.copyWith(imagePath: file.path));
         AppLogger.info('下载图片成功: ${remote.id}.$ext');
         return;
       }
     }
-    AppLogger.warn('图片下载失败，所有扩展名均未匹配: ${remote.id}');
+    AppLogger.warn('图片下载失败: ${remote.id}');
   }
 
   Future<String> _getLocalImageDir() async {

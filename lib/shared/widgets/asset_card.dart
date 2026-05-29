@@ -1,0 +1,268 @@
+import 'package:flutter/material.dart';
+
+class AssetCard extends StatelessWidget {
+  final String name;
+  final double originalPrice;
+  final int daysUsed;
+  final double dailyCost;
+  final double progressPercent; // 0.0 - 100.0
+  final int? remainingDays; // null = 已达成
+  final String status; // "服役中" / "已退役" / "已出售"
+  final bool isActive;
+  final Widget imageWidget;
+
+  const AssetCard({
+    super.key,
+    required this.name,
+    required this.originalPrice,
+    required this.daysUsed,
+    required this.dailyCost,
+    required this.progressPercent,
+    required this.remainingDays,
+    required this.status,
+    required this.isActive,
+    required this.imageWidget,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 24,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ---- Top: image + status badge ----
+          _TopSection(),
+          const SizedBox(height: 12),
+          // ---- Middle: name + meta ----
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1D1D1F),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '¥${_fmtInt(originalPrice)}  |  已使用 $daysUsed 天',
+            style: const TextStyle(fontSize: 12, color: Color(0xFF86868B)),
+          ),
+          const SizedBox(height: 10),
+          // ---- Bottom: daily cost + progress ----
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '¥${dailyCost.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1D1D1F),
+                ),
+              ),
+              const SizedBox(width: 2),
+              const Text(
+                '/天',
+                style: TextStyle(fontSize: 12, color: Color(0xFF86868B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _ProgressBar(
+            percent: progressPercent,
+            remainingDays: remainingDays,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _TopSection() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(
+          height: 80,
+          width: 80,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: imageWidget,
+          ),
+        ),
+        _StatusBadge(
+          isActive: isActive,
+          label: status,
+        ),
+      ],
+    );
+  }
+
+  String _fmtInt(double v) {
+    if (v == v.roundToDouble()) return v.toInt().toString();
+    return v.toStringAsFixed(2);
+  }
+}
+
+// ============================================================
+// Status Badge
+// ============================================================
+
+class _StatusBadge extends StatelessWidget {
+  final bool isActive;
+  final String label;
+  const _StatusBadge({required this.isActive, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isActive
+            ? const Color(0xFFBCE038).withAlpha(30)
+            : const Color(0xFFF5F5F7),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: isActive ? const Color(0xFFBCE038) : Colors.grey,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: isActive ? const Color(0xFF4A5A00) : Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// Custom Progress Bar with Triangle Indicator
+// ============================================================
+
+class _ProgressBar extends StatelessWidget {
+  final double percent; // 0-100
+  final int? remainingDays;
+  const _ProgressBar({required this.percent, this.remainingDays});
+
+  @override
+  Widget build(BuildContext context) {
+    final clamped = percent.clamp(0.0, 100.0) / 100.0;
+    final isGoal = remainingDays == null || remainingDays! <= 0;
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 20, // 给三角留空间（三角高度 ~6px + 间距）
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final barW = constraints.maxWidth;
+              final barH = 6.0;
+              final triX = (barW * clamped).clamp(4.0, barW - 4.0);
+
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Track
+                  Positioned(
+                    top: 8.0, // 三角在上方 8px，bar 在下方
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: barH,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0F0F0),
+                        borderRadius: BorderRadius.circular(barH / 2),
+                      ),
+                    ),
+                  ),
+                  // Filled
+                  Positioned(
+                    top: 8.0,
+                    left: 0,
+                    child: Container(
+                      height: barH,
+                      width: triX + 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFBCE038),
+                        borderRadius: BorderRadius.circular(barH / 2),
+                      ),
+                    ),
+                  ),
+                  // Triangle indicator (▼)
+                  Positioned(
+                    left: triX - 5,
+                    top: 0,
+                    child: CustomPaint(
+                      size: const Size(10, 7),
+                      painter: _TrianglePainter(),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 2),
+        Align(
+          child: Text(
+            isGoal ? '已达成目标' : '还剩 $remainingDays 天',
+            style: TextStyle(
+              fontSize: 11,
+              color: isGoal ? const Color(0xFFBCE038) : const Color(0xFF86868B),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 绘制向下的黑色小三角 ▼
+class _TrianglePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF1D1D1F)
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(size.width / 2, size.height) // bottom center
+      ..lineTo(0, 0) // top-left
+      ..lineTo(size.width, 0) // top-right
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}

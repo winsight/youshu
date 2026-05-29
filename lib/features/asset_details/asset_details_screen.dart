@@ -144,7 +144,7 @@ class _AssetDetailContent extends StatelessWidget {
               width: double.infinity,
               height: 280,
               margin: const EdgeInsets.symmetric(horizontal: 8),
-              color: AppColors.surfaceContainer,
+              color: Colors.white,
               child: _buildImage(),
             ),
           ),
@@ -180,12 +180,17 @@ class _AssetDetailContent extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    if (asset.imagePath != null && File(asset.imagePath!).existsSync()) {
-      return Image.file(
-        File(asset.imagePath!),
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
+    final imgPath = asset.stickerImagePath ?? asset.imagePath;
+    if (imgPath != null && File(imgPath).existsSync()) {
+      // 白色底容器，透明 PNG 自然融入
+      return Container(
+        color: Colors.white,
+        child: Image.file(
+          File(imgPath),
+          fit: BoxFit.contain,
+          alignment: Alignment.topLeft,
+          width: double.infinity,
+        ),
       );
     }
     return Center(

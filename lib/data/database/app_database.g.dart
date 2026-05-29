@@ -123,6 +123,17 @@ class $AssetsTable extends Assets with TableInfo<$AssetsTable, Asset> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _stickerImagePathMeta = const VerificationMeta(
+    'stickerImagePath',
+  );
+  @override
+  late final GeneratedColumn<String> stickerImagePath = GeneratedColumn<String>(
+    'sticker_image_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -185,6 +196,7 @@ class $AssetsTable extends Assets with TableInfo<$AssetsTable, Asset> {
     merchant,
     warranty,
     imagePath,
+    stickerImagePath,
     createdAt,
     updatedAt,
     isDeleted,
@@ -281,6 +293,15 @@ class $AssetsTable extends Assets with TableInfo<$AssetsTable, Asset> {
         imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta),
       );
     }
+    if (data.containsKey('sticker_image_path')) {
+      context.handle(
+        _stickerImagePathMeta,
+        stickerImagePath.isAcceptableOrUnknown(
+          data['sticker_image_path']!,
+          _stickerImagePathMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -365,6 +386,10 @@ class $AssetsTable extends Assets with TableInfo<$AssetsTable, Asset> {
         DriftSqlType.string,
         data['${effectivePrefix}image_path'],
       ),
+      stickerImagePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sticker_image_path'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -402,6 +427,7 @@ class Asset extends DataClass implements Insertable<Asset> {
   final String? merchant;
   final String? warranty;
   final String? imagePath;
+  final String? stickerImagePath;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isDeleted;
@@ -418,6 +444,7 @@ class Asset extends DataClass implements Insertable<Asset> {
     this.merchant,
     this.warranty,
     this.imagePath,
+    this.stickerImagePath,
     required this.createdAt,
     required this.updatedAt,
     required this.isDeleted,
@@ -444,6 +471,9 @@ class Asset extends DataClass implements Insertable<Asset> {
     }
     if (!nullToAbsent || imagePath != null) {
       map['image_path'] = Variable<String>(imagePath);
+    }
+    if (!nullToAbsent || stickerImagePath != null) {
+      map['sticker_image_path'] = Variable<String>(stickerImagePath);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -473,6 +503,9 @@ class Asset extends DataClass implements Insertable<Asset> {
       imagePath: imagePath == null && nullToAbsent
           ? const Value.absent()
           : Value(imagePath),
+      stickerImagePath: stickerImagePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(stickerImagePath),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       isDeleted: Value(isDeleted),
@@ -497,6 +530,7 @@ class Asset extends DataClass implements Insertable<Asset> {
       merchant: serializer.fromJson<String?>(json['merchant']),
       warranty: serializer.fromJson<String?>(json['warranty']),
       imagePath: serializer.fromJson<String?>(json['imagePath']),
+      stickerImagePath: serializer.fromJson<String?>(json['stickerImagePath']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
@@ -518,6 +552,7 @@ class Asset extends DataClass implements Insertable<Asset> {
       'merchant': serializer.toJson<String?>(merchant),
       'warranty': serializer.toJson<String?>(warranty),
       'imagePath': serializer.toJson<String?>(imagePath),
+      'stickerImagePath': serializer.toJson<String?>(stickerImagePath),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isDeleted': serializer.toJson<bool>(isDeleted),
@@ -537,6 +572,7 @@ class Asset extends DataClass implements Insertable<Asset> {
     Value<String?> merchant = const Value.absent(),
     Value<String?> warranty = const Value.absent(),
     Value<String?> imagePath = const Value.absent(),
+    Value<String?> stickerImagePath = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isDeleted,
@@ -553,6 +589,9 @@ class Asset extends DataClass implements Insertable<Asset> {
     merchant: merchant.present ? merchant.value : this.merchant,
     warranty: warranty.present ? warranty.value : this.warranty,
     imagePath: imagePath.present ? imagePath.value : this.imagePath,
+    stickerImagePath: stickerImagePath.present
+        ? stickerImagePath.value
+        : this.stickerImagePath,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     isDeleted: isDeleted ?? this.isDeleted,
@@ -575,6 +614,9 @@ class Asset extends DataClass implements Insertable<Asset> {
       merchant: data.merchant.present ? data.merchant.value : this.merchant,
       warranty: data.warranty.present ? data.warranty.value : this.warranty,
       imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
+      stickerImagePath: data.stickerImagePath.present
+          ? data.stickerImagePath.value
+          : this.stickerImagePath,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
@@ -598,6 +640,7 @@ class Asset extends DataClass implements Insertable<Asset> {
           ..write('merchant: $merchant, ')
           ..write('warranty: $warranty, ')
           ..write('imagePath: $imagePath, ')
+          ..write('stickerImagePath: $stickerImagePath, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDeleted: $isDeleted, ')
@@ -619,6 +662,7 @@ class Asset extends DataClass implements Insertable<Asset> {
     merchant,
     warranty,
     imagePath,
+    stickerImagePath,
     createdAt,
     updatedAt,
     isDeleted,
@@ -639,6 +683,7 @@ class Asset extends DataClass implements Insertable<Asset> {
           other.merchant == this.merchant &&
           other.warranty == this.warranty &&
           other.imagePath == this.imagePath &&
+          other.stickerImagePath == this.stickerImagePath &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.isDeleted == this.isDeleted &&
@@ -657,6 +702,7 @@ class AssetsCompanion extends UpdateCompanion<Asset> {
   final Value<String?> merchant;
   final Value<String?> warranty;
   final Value<String?> imagePath;
+  final Value<String?> stickerImagePath;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> isDeleted;
@@ -674,6 +720,7 @@ class AssetsCompanion extends UpdateCompanion<Asset> {
     this.merchant = const Value.absent(),
     this.warranty = const Value.absent(),
     this.imagePath = const Value.absent(),
+    this.stickerImagePath = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.isDeleted = const Value.absent(),
@@ -692,6 +739,7 @@ class AssetsCompanion extends UpdateCompanion<Asset> {
     this.merchant = const Value.absent(),
     this.warranty = const Value.absent(),
     this.imagePath = const Value.absent(),
+    this.stickerImagePath = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.isDeleted = const Value.absent(),
@@ -716,6 +764,7 @@ class AssetsCompanion extends UpdateCompanion<Asset> {
     Expression<String>? merchant,
     Expression<String>? warranty,
     Expression<String>? imagePath,
+    Expression<String>? stickerImagePath,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? isDeleted,
@@ -734,6 +783,7 @@ class AssetsCompanion extends UpdateCompanion<Asset> {
       if (merchant != null) 'merchant': merchant,
       if (warranty != null) 'warranty': warranty,
       if (imagePath != null) 'image_path': imagePath,
+      if (stickerImagePath != null) 'sticker_image_path': stickerImagePath,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isDeleted != null) 'is_deleted': isDeleted,
@@ -754,6 +804,7 @@ class AssetsCompanion extends UpdateCompanion<Asset> {
     Value<String?>? merchant,
     Value<String?>? warranty,
     Value<String?>? imagePath,
+    Value<String?>? stickerImagePath,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? isDeleted,
@@ -772,6 +823,7 @@ class AssetsCompanion extends UpdateCompanion<Asset> {
       merchant: merchant ?? this.merchant,
       warranty: warranty ?? this.warranty,
       imagePath: imagePath ?? this.imagePath,
+      stickerImagePath: stickerImagePath ?? this.stickerImagePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDeleted: isDeleted ?? this.isDeleted,
@@ -816,6 +868,9 @@ class AssetsCompanion extends UpdateCompanion<Asset> {
     if (imagePath.present) {
       map['image_path'] = Variable<String>(imagePath.value);
     }
+    if (stickerImagePath.present) {
+      map['sticker_image_path'] = Variable<String>(stickerImagePath.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -848,6 +903,7 @@ class AssetsCompanion extends UpdateCompanion<Asset> {
           ..write('merchant: $merchant, ')
           ..write('warranty: $warranty, ')
           ..write('imagePath: $imagePath, ')
+          ..write('stickerImagePath: $stickerImagePath, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isDeleted: $isDeleted, ')
@@ -2186,6 +2242,7 @@ typedef $$AssetsTableCreateCompanionBuilder =
       Value<String?> merchant,
       Value<String?> warranty,
       Value<String?> imagePath,
+      Value<String?> stickerImagePath,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<bool> isDeleted,
@@ -2205,6 +2262,7 @@ typedef $$AssetsTableUpdateCompanionBuilder =
       Value<String?> merchant,
       Value<String?> warranty,
       Value<String?> imagePath,
+      Value<String?> stickerImagePath,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> isDeleted,
@@ -2273,6 +2331,11 @@ class $$AssetsTableFilterComposer
 
   ColumnFilters<String> get imagePath => $composableBuilder(
     column: $table.imagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get stickerImagePath => $composableBuilder(
+    column: $table.stickerImagePath,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2361,6 +2424,11 @@ class $$AssetsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get stickerImagePath => $composableBuilder(
+    column: $table.stickerImagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -2428,6 +2496,11 @@ class $$AssetsTableAnnotationComposer
   GeneratedColumn<String> get imagePath =>
       $composableBuilder(column: $table.imagePath, builder: (column) => column);
 
+  GeneratedColumn<String> get stickerImagePath => $composableBuilder(
+    column: $table.stickerImagePath,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -2482,6 +2555,7 @@ class $$AssetsTableTableManager
                 Value<String?> merchant = const Value.absent(),
                 Value<String?> warranty = const Value.absent(),
                 Value<String?> imagePath = const Value.absent(),
+                Value<String?> stickerImagePath = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
@@ -2499,6 +2573,7 @@ class $$AssetsTableTableManager
                 merchant: merchant,
                 warranty: warranty,
                 imagePath: imagePath,
+                stickerImagePath: stickerImagePath,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDeleted: isDeleted,
@@ -2518,6 +2593,7 @@ class $$AssetsTableTableManager
                 Value<String?> merchant = const Value.absent(),
                 Value<String?> warranty = const Value.absent(),
                 Value<String?> imagePath = const Value.absent(),
+                Value<String?> stickerImagePath = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<bool> isDeleted = const Value.absent(),
@@ -2535,6 +2611,7 @@ class $$AssetsTableTableManager
                 merchant: merchant,
                 warranty: warranty,
                 imagePath: imagePath,
+                stickerImagePath: stickerImagePath,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDeleted: isDeleted,

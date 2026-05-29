@@ -29,6 +29,14 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- ML Kit 模型安装时下载 -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="subject_segmentation" />
+        <!-- 图片裁剪 Activity -->
+        <activity
+            android:name="com.canhub.cropper.CropActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity android:name="net.openid.appauth.RedirectUriReceiverActivity"
             android:launchMode="singleTask"
             android:exported="true">

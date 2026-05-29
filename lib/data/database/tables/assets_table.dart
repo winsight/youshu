@@ -12,6 +12,7 @@ class Assets extends Table {
   TextColumn get merchant => text().nullable()();
   TextColumn get warranty => text().nullable()();
   TextColumn get imagePath => text().nullable()();
+  TextColumn get stickerImagePath => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
