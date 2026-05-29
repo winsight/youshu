@@ -91,7 +91,7 @@ class SyncService {
       for (final remote in remoteAssets) {
         if (!localMap.containsKey(remote.id)) {
           await _localDb.insert(remote);
-          pulled++;
+          if (!remote.isDeleted) pulled++;
           pulledIds.add(remote.id);
           AppLogger.info('合并-插入: ${remote.id} (本地不存在)');
         }
@@ -105,7 +105,7 @@ class SyncService {
         if (remote.updatedAt.millisecondsSinceEpoch >
             local.updatedAt.millisecondsSinceEpoch) {
           await _localDb.update(remote);
-          pulled++;
+          if (!remote.isDeleted) pulled++;
           pulledIds.add(local.id);
           AppLogger.info(
             '合并-覆盖: ${local.id} (云端 ${remote.updatedAt} > 本地 ${local.updatedAt})',
@@ -128,11 +128,14 @@ class SyncService {
 
       // ---- 6. 闭环上传 —— 本地全部记录覆盖云端 data.json ----
       final allLocal = await _localDb.getAllIncludingDeleted();
+      final activeLocal = allLocal.where((asset) => !asset.isDeleted).toList();
       final jsonList = allLocal.map((a) => a.toJson()).toList();
       final payload = const JsonEncoder.withIndent('  ').convert(jsonList);
       await _remote.writeFile(remoteDataFile, payload);
-      pushed = allLocal.length;
-      AppLogger.info('上传 data.json 完成: $pushed 条记录');
+      pushed = activeLocal.length;
+      AppLogger.info(
+        '上传 data.json 完成: ${allLocal.length} 条记录，当前有效资产 $pushed 条',
+      );
 
       // ---- 7. 上传所有本地图片（含贴纸） ----
       int imagesUploaded = 0;
@@ -140,13 +143,16 @@ class SyncService {
         if (local.isDeleted) continue;
 
         // 上传贴纸图（优先，因为更有展示价值）
-        if (local.stickerImagePath != null && local.stickerImagePath!.isNotEmpty) {
+        if (local.stickerImagePath != null &&
+            local.stickerImagePath!.isNotEmpty) {
           final stickerFile = File(local.stickerImagePath!);
           if (await stickerFile.exists()) {
             try {
               final ext = local.stickerImagePath!.split('.').last;
               await _remote.uploadFile(
-                  '$remoteImageDir/${local.id}_sticker.$ext', stickerFile);
+                '$remoteImageDir/${local.id}_sticker.$ext',
+                stickerFile,
+              );
               imagesUploaded++;
               AppLogger.info('上传贴纸图: ${local.id}_sticker.$ext');
             } catch (e) {
@@ -162,7 +168,9 @@ class SyncService {
             try {
               final ext = local.imagePath!.split('.').last;
               await _remote.uploadFile(
-                  '$remoteImageDir/${local.id}.$ext', imageFile);
+                '$remoteImageDir/${local.id}.$ext',
+                imageFile,
+              );
               imagesUploaded++;
               AppLogger.info('上传图片: ${local.id}.$ext');
             } catch (e) {
@@ -203,12 +211,23 @@ class SyncService {
       '$appDir/${remote.id}_sticker.png',
     );
     if (stickerFile != null && await stickerFile.exists()) {
-      await _localDb.update(remote.copyWith(stickerImagePath: stickerFile.path));
+      await _localDb.update(
+        remote.copyWith(stickerImagePath: stickerFile.path),
+      );
       AppLogger.info('下载贴纸图成功: ${remote.id}_sticker.png');
     }
 
     // 再尝试下载原图
-    for (final ext in ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'gif', 'bmp']) {
+    for (final ext in [
+      'jpg',
+      'jpeg',
+      'png',
+      'webp',
+      'heic',
+      'heif',
+      'gif',
+      'bmp',
+    ]) {
       final localPath = '$appDir/${remote.id}.$ext';
       final file = await _remote.downloadFile(
         '$remoteImageDir/${remote.id}.$ext',

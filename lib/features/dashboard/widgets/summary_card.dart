@@ -11,14 +11,17 @@ class SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: colors.shadow.withAlpha(
+              colors.brightness == Brightness.dark ? 70 : 10,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -30,27 +33,26 @@ class SummaryCard extends StatelessWidget {
             children: [
               Text(
                 l10n.assetOverview,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onSurfaceVariant,
+                  color: colors.onSurfaceVariant,
                   letterSpacing: 0.24,
                 ),
               ),
               const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerHigh,
+                  color: colors.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(DesignTokens.radiusFull),
                 ),
                 child: Text(
                   '${summary.inServiceCount}/${summary.totalAssets}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.onSurfaceVariant,
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -100,25 +102,26 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: AppColors.onSurfaceVariant,
+            color: colors.onSurfaceVariant,
             letterSpacing: 0.24,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w600,
-            color: AppColors.onSurface,
+            color: colors.onSurface,
           ),
         ),
       ],
@@ -185,6 +188,7 @@ class _StatusItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final ratio = total > 0 ? count / total : 0.0;
     return Expanded(
       child: Column(
@@ -192,10 +196,7 @@ class _StatusItem extends StatelessWidget {
         children: [
           Text(
             '$label $count',
-            style: const TextStyle(
-              fontSize: 10,
-              color: AppColors.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 10, color: colors.onSurfaceVariant),
           ),
           const SizedBox(height: 4),
           ClipRRect(
@@ -204,7 +205,7 @@ class _StatusItem extends StatelessWidget {
               height: 6,
               child: LinearProgressIndicator(
                 value: ratio,
-                backgroundColor: AppColors.surfaceVariant,
+                backgroundColor: colors.surfaceContainerHigh,
                 valueColor: AlwaysStoppedAnimation<Color>(color),
               ),
             ),

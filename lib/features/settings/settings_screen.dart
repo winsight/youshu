@@ -60,7 +60,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SnackBar(
             content: Text(
               result.success
-                  ? '${AppL10n.of(context).syncComplete} (↑${result.pushed} ↓${result.pulled})'
+                  ? '${AppL10n.of(context).syncComplete} (↑${result.pushed} ↓${result.pulled} 🖼${result.imagesUploaded})'
                   : '${result.error}',
             ),
             backgroundColor: result.success
@@ -381,11 +381,12 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: padding,
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
       ),
       child: Column(children: children),
@@ -401,10 +402,10 @@ class _SectionHeader extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
     child: Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.onSurfaceVariant,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         letterSpacing: 0.5,
       ),
     ),
@@ -425,22 +426,26 @@ class _AboutRow extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 10),
     child: Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.onSurfaceVariant),
+        Icon(
+          icon,
+          size: 18,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: 10),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: AppColors.onSurfaceVariant,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.onSurface,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ],

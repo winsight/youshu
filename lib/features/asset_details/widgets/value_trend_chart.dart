@@ -18,13 +18,14 @@ class _ValueTrendChartState extends State<ValueTrendChart> {
   @override
   Widget build(BuildContext context) {
     final bars = _generateData();
+    final colors = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        border: Border.all(color: AppColors.outlineVariant.withAlpha(80)),
+        border: Border.all(color: colors.outlineVariant.withAlpha(80)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,11 +33,12 @@ class _ValueTrendChartState extends State<ValueTrendChart> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Value Trend',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
+                  color: colors.onSurface,
                 ),
               ),
               Row(
@@ -65,8 +67,9 @@ class _ValueTrendChartState extends State<ValueTrendChart> {
                           (100 + (entry.key / bars.length) * 155).toInt(),
                         ),
                         width: 16,
-                        borderRadius:
-                            const BorderRadius.vertical(top: Radius.circular(4)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(4),
+                        ),
                       ),
                     ],
                   );
@@ -74,18 +77,31 @@ class _ValueTrendChartState extends State<ValueTrendChart> {
                 titlesData: FlTitlesData(
                   show: true,
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
                         final months = [
-                          'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-                          'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+                          'JAN',
+                          'FEB',
+                          'MAR',
+                          'APR',
+                          'MAY',
+                          'JUN',
+                          'JUL',
+                          'AUG',
+                          'SEP',
+                          'OCT',
+                          'NOV',
+                          'DEC',
                         ];
                         final idx = value.toInt();
                         if (idx >= 0 && idx < months.length) {
@@ -94,7 +110,9 @@ class _ValueTrendChartState extends State<ValueTrendChart> {
                             child: Text(
                               months[idx],
                               style: const TextStyle(
-                                  fontSize: 10, color: AppColors.onSurfaceVariant),
+                                fontSize: 10,
+                                color: AppColors.onSurfaceVariant,
+                              ),
                             ),
                           );
                         }
@@ -128,9 +146,7 @@ class _ValueTrendChartState extends State<ValueTrendChart> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: isSelected
-                ? AppColors.onPrimary
-                : AppColors.onSurface,
+            color: isSelected ? AppColors.onPrimary : AppColors.onSurface,
           ),
         ),
       ),
@@ -142,7 +158,8 @@ class _ValueTrendChartState extends State<ValueTrendChart> {
     final originalPrice = widget.asset.purchasePrice;
     final count = 6;
     return List.generate(count, (i) {
-      final ratio = 1.0 - ((count - 1 - i) / (count - 1)) * widget.asset.progressRatio;
+      final ratio =
+          1.0 - ((count - 1 - i) / (count - 1)) * widget.asset.progressRatio;
       return originalPrice - (originalPrice - currentValue) * ratio;
     });
   }

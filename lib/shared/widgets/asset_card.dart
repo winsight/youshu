@@ -26,14 +26,17 @@ class AssetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: colors.shadow.withAlpha(
+              colors.brightness == Brightness.dark ? 70 : 10,
+            ),
             blurRadius: 24,
             offset: const Offset(0, 6),
           ),
@@ -43,23 +46,23 @@ class AssetCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ---- Top: image + status badge ----
-          _TopSection(),
+          _TopSection(context),
           const SizedBox(height: 12),
           // ---- Middle: name + meta ----
           Text(
             name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1D1D1F),
+              color: colors.onSurface,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             '¥${_fmtInt(originalPrice)}  |  已使用 $daysUsed 天',
-            style: const TextStyle(fontSize: 12, color: Color(0xFF86868B)),
+            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
           ),
           const SizedBox(height: 10),
           // ---- Bottom: daily cost + progress ----
@@ -69,30 +72,28 @@ class AssetCard extends StatelessWidget {
             children: [
               Text(
                 '¥${dailyCost.toStringAsFixed(2)}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1D1D1F),
+                  color: colors.onSurface,
                 ),
               ),
               const SizedBox(width: 2),
-              const Text(
+              Text(
                 '/天',
-                style: TextStyle(fontSize: 12, color: Color(0xFF86868B)),
+                style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          _ProgressBar(
-            percent: progressPercent,
-            remainingDays: remainingDays,
-          ),
+          _ProgressBar(percent: progressPercent, remainingDays: remainingDays),
         ],
       ),
     );
   }
 
-  Widget _TopSection() {
+  Widget _TopSection(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -101,16 +102,13 @@ class AssetCard extends StatelessWidget {
           height: 80,
           width: 80,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colors.surfaceContainerLow,
             borderRadius: BorderRadius.circular(8),
           ),
           clipBehavior: Clip.antiAlias,
           child: imageWidget,
         ),
-        _StatusBadge(
-          isActive: isActive,
-          label: status,
-        ),
+        _StatusBadge(isActive: isActive, label: status),
       ],
     );
   }
@@ -132,12 +130,13 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: isActive
             ? const Color(0xFFBCE038).withAlpha(30)
-            : const Color(0xFFF5F5F7),
+            : colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -157,7 +156,11 @@ class _StatusBadge extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: isActive ? const Color(0xFF4A5A00) : Colors.grey,
+              color: isActive
+                  ? (colors.brightness == Brightness.dark
+                        ? const Color(0xFFDDFB78)
+                        : const Color(0xFF4A5A00))
+                  : colors.onSurfaceVariant,
             ),
           ),
         ],
@@ -177,6 +180,7 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final clamped = percent.clamp(0.0, 100.0) / 100.0;
     final isGoal = remainingDays == null || remainingDays! <= 0;
 
@@ -201,7 +205,7 @@ class _ProgressBar extends StatelessWidget {
                     child: Container(
                       height: barH,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0F0F0),
+                        color: colors.surfaceContainerHigh,
                         borderRadius: BorderRadius.circular(barH / 2),
                       ),
                     ),
@@ -239,7 +243,7 @@ class _ProgressBar extends StatelessWidget {
             isGoal ? '已达成目标' : '还剩 $remainingDays 天',
             style: TextStyle(
               fontSize: 11,
-              color: isGoal ? const Color(0xFFBCE038) : const Color(0xFF86868B),
+              color: isGoal ? const Color(0xFFBCE038) : colors.onSurfaceVariant,
             ),
           ),
         ),

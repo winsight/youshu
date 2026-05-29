@@ -13,14 +13,15 @@ class ServiceLifeProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final colors = Theme.of(context).colorScheme;
     final pct = (asset.progressRatio * 100).toInt();
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        border: Border.all(color: AppColors.outlineVariant.withAlpha(80)),
+        border: Border.all(color: colors.outlineVariant.withAlpha(80)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,55 +35,53 @@ class ServiceLifeProgress extends StatelessWidget {
                 children: [
                   Text(
                     l10n.serviceLife,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.onSurfaceVariant,
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${asset.daysUsed} ${l10n.daysUsed}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
+                      color: colors.onSurface,
                     ),
                   ),
                 ],
               ),
               Text(
                 '${l10n.goal}: ${asset.goalDays} ${l10n.isZh ? '天' : 'Days'} (${asset.goalDays ~/ 365} ${l10n.isZh ? '年' : 'yrs'})',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.onSurfaceVariant,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          SegmentedProgressBar(
-            progressRatio: asset.progressRatio,
-            segments: 6,
-          ),
+          SegmentedProgressBar(progressRatio: asset.progressRatio, segments: 6),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 '${l10n.started}: ${DateFormat('MMM d, y').format(asset.purchaseDate)}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.onSurfaceVariant,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
               Text(
                 '$pct% ${l10n.completed}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.onSurfaceVariant,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
             ],

@@ -22,33 +22,36 @@ Future<DateTimeRange?> _showPeriodPicker(BuildContext context) async {
             padding: const EdgeInsets.all(16),
             child: Text(
               l10n.isZh ? '选择时间范围' : 'Select Period',
-              style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ),
           ListTile(
             leading: const Icon(Icons.today),
             title: Text(l10n.isZh ? '本月' : 'This Month'),
             onTap: () => Navigator.pop(
-                ctx,
-                DateFormat('yyyy-MM-dd')
-                    .format(DateTime(now.year, now.month, 1))),
+              ctx,
+              DateFormat('yyyy-MM-dd').format(DateTime(now.year, now.month, 1)),
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.view_week),
             title: Text(l10n.isZh ? '近3个月' : 'Last 3 Months'),
             onTap: () => Navigator.pop(
-                ctx,
-                DateFormat('yyyy-MM-dd')
-                    .format(DateTime(now.year, now.month - 2, 1))),
+              ctx,
+              DateFormat(
+                'yyyy-MM-dd',
+              ).format(DateTime(now.year, now.month - 2, 1)),
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.date_range),
             title: Text(l10n.isZh ? '近6个月' : 'Last 6 Months'),
             onTap: () => Navigator.pop(
-                ctx,
-                DateFormat('yyyy-MM-dd')
-                    .format(DateTime(now.year, now.month - 5, 1))),
+              ctx,
+              DateFormat(
+                'yyyy-MM-dd',
+              ).format(DateTime(now.year, now.month - 5, 1)),
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.calendar_view_month),
@@ -62,12 +65,13 @@ Future<DateTimeRange?> _showPeriodPicker(BuildContext context) async {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.edit_calendar,
-                color: AppColors.primary),
+            leading: const Icon(Icons.edit_calendar, color: AppColors.primary),
             title: Text(
               l10n.isZh ? '自定义范围...' : 'Custom Range...',
               style: const TextStyle(
-                  color: AppColors.primary, fontWeight: FontWeight.w600),
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             onTap: () => Navigator.pop(ctx, '__custom__'),
           ),
@@ -91,9 +95,9 @@ Future<DateTimeRange?> _showPeriodPicker(BuildContext context) async {
       ),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: Theme.of(ctx).colorScheme.copyWith(
-                primary: AppColors.primary,
-              ),
+          colorScheme: Theme.of(
+            ctx,
+          ).colorScheme.copyWith(primary: AppColors.primary),
         ),
         child: child!,
       ),
@@ -153,10 +157,7 @@ class StatisticsScreen extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              AppColors.primary.withAlpha(30),
-              AppColors.background,
-            ],
+            colors: [AppColors.primary.withAlpha(30), AppColors.background],
           ),
         ),
         child: Column(
@@ -190,8 +191,10 @@ class StatisticsScreen extends ConsumerWidget {
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.calendar_today,
-                          color: AppColors.primary),
+                      icon: const Icon(
+                        Icons.calendar_today,
+                        color: AppColors.primary,
+                      ),
                       onPressed: () => _showPeriodPicker(context),
                     ),
                   ],
@@ -205,16 +208,21 @@ class StatisticsScreen extends ConsumerWidget {
   }
 
   Widget _buildDistributionCard(
-      BuildContext context, AsyncValue<List<CategoryDistribution>> asyncDist) {
+    BuildContext context,
+    AsyncValue<List<CategoryDistribution>> asyncDist,
+  ) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        border: Border.all(color: AppColors.outlineVariant.withAlpha(80)),
+        border: Border.all(color: colors.outlineVariant.withAlpha(80)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: colors.shadow.withAlpha(
+              colors.brightness == Brightness.dark ? 70 : 10,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -297,16 +305,15 @@ class StatisticsScreen extends ConsumerWidget {
           height: 200,
           child: Center(child: CircularProgressIndicator()),
         ),
-        error: (e, _) => SizedBox(
-          height: 200,
-          child: Center(child: Text('$e')),
-        ),
+        error: (e, _) =>
+            SizedBox(height: 200, child: Center(child: Text('$e'))),
       ),
     );
   }
 
   List<PieChartSectionData> _buildDonutSections(
-      List<CategoryDistribution> distributions) {
+    List<CategoryDistribution> distributions,
+  ) {
     final colors = [
       AppColors.primary,
       AppColors.secondary,
@@ -336,7 +343,9 @@ class StatisticsScreen extends ConsumerWidget {
   }
 
   Widget _buildCategoryInsights(
-      BuildContext context, AsyncValue<List<CategoryDistribution>> asyncDist) {
+    BuildContext context,
+    AsyncValue<List<CategoryDistribution>> asyncDist,
+  ) {
     final l10n = AppL10n.of(context);
     return asyncDist.when(
       data: (distributions) {
@@ -349,29 +358,34 @@ class StatisticsScreen extends ConsumerWidget {
               child: Text(
                 l10n.isZh ? '分类洞察' : 'Category Insights',
                 style: const TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.w600),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             ...distributions.map((d) => _buildInsightRow(context, d)),
           ],
         );
       },
-      loading: () =>
-          const SizedBox(height: 80, child: Center(child: CircularProgressIndicator())),
+      loading: () => const SizedBox(
+        height: 80,
+        child: Center(child: CircularProgressIndicator()),
+      ),
       error: (_, __) => const SizedBox.shrink(),
     );
   }
 
   Widget _buildInsightRow(BuildContext context, CategoryDistribution d) {
     final l10n = AppL10n.of(context);
+    final colors = Theme.of(context).colorScheme;
     final catName = l10n.getCategoryName(d.category);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        border: Border.all(color: AppColors.outlineVariant.withAlpha(80)),
+        border: Border.all(color: colors.outlineVariant.withAlpha(80)),
       ),
       child: Row(
         children: [
@@ -395,22 +409,30 @@ class StatisticsScreen extends ConsumerWidget {
               children: [
                 Text(
                   catName,
-                  style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colors.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${d.count} ${l10n.isZh ? '件' : 'items'} · ${d.percentage.toStringAsFixed(0)}% ${l10n.isZh ? '占比' : 'of portfolio'}',
-                  style: const TextStyle(
-                    fontSize: 13, color: AppColors.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
           ),
           Text(
             '¥${d.totalValue.toStringAsFixed(0)}',
-            style: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: colors.onSurface,
+            ),
           ),
         ],
       ),
@@ -418,16 +440,21 @@ class StatisticsScreen extends ConsumerWidget {
   }
 
   Widget _buildLiquiditySummary(
-      BuildContext context, AsyncValue<DashboardSummary> asyncSummary) {
+    BuildContext context,
+    AsyncValue<DashboardSummary> asyncSummary,
+  ) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        border: Border.all(color: AppColors.outlineVariant.withAlpha(80)),
+        border: Border.all(color: colors.outlineVariant.withAlpha(80)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: colors.shadow.withAlpha(
+              colors.brightness == Brightness.dark ? 70 : 10,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -461,13 +488,22 @@ class StatisticsScreen extends ConsumerWidget {
                   Row(
                     children: [
                       _buildMiniBar(
-                          AppL10n.of(context).inService, summary.inServiceCount, AppColors.primary),
+                        AppL10n.of(context).inService,
+                        summary.inServiceCount,
+                        AppColors.primary,
+                      ),
                       const SizedBox(width: 16),
                       _buildMiniBar(
-                          AppL10n.of(context).retired, summary.retiredCount, AppColors.secondary),
+                        AppL10n.of(context).retired,
+                        summary.retiredCount,
+                        AppColors.secondary,
+                      ),
                       const SizedBox(width: 16),
                       _buildMiniBar(
-                          AppL10n.of(context).sold, summary.soldCount, AppColors.outline),
+                        AppL10n.of(context).sold,
+                        summary.soldCount,
+                        AppColors.outline,
+                      ),
                     ],
                   ),
                 ],
@@ -488,10 +524,7 @@ class StatisticsScreen extends ConsumerWidget {
           height: 80,
           child: Center(child: CircularProgressIndicator()),
         ),
-        error: (e, _) => SizedBox(
-          height: 80,
-          child: Center(child: Text('$e')),
-        ),
+        error: (e, _) => SizedBox(height: 80, child: Center(child: Text('$e'))),
       ),
     );
   }

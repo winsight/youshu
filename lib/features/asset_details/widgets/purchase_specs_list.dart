@@ -11,11 +11,12 @@ class PurchaseSpecsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        border: Border.all(color: AppColors.outlineVariant.withAlpha(80)),
+        border: Border.all(color: colors.outlineVariant.withAlpha(80)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -27,31 +28,43 @@ class PurchaseSpecsList extends StatelessWidget {
                 Expanded(
                   child: Text(
                     l10n.purchaseSpecs.toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.onSurfaceVariant,
+                      color: colors.onSurfaceVariant,
                       letterSpacing: 0.24,
                     ),
                   ),
                 ),
-                const Icon(Icons.info_outline,
-                    size: 16, color: AppColors.onSurfaceVariant),
+                Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: colors.onSurfaceVariant,
+                ),
               ],
             ),
           ),
           if (asset.merchant != null)
-            _buildSpecRow(l10n.merchant, asset.merchant!),
+            _buildSpecRow(context, l10n.merchant, asset.merchant!),
           if (asset.warranty != null)
-            _buildSpecRow(l10n.warranty, asset.warranty!),
-          _buildSpecRow(l10n.category, l10n.getCategoryName(asset.category)),
-          _buildSpecRow(l10n.daysUsed, '${asset.daysUsed} ${l10n.isZh ? '天' : 'days'}'),
+            _buildSpecRow(context, l10n.warranty, asset.warranty!),
+          _buildSpecRow(
+            context,
+            l10n.category,
+            l10n.getCategoryName(asset.category),
+          ),
+          _buildSpecRow(
+            context,
+            l10n.daysUsed,
+            '${asset.daysUsed} ${l10n.isZh ? '天' : 'days'}',
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildSpecRow(String label, String value) {
+  Widget _buildSpecRow(BuildContext context, String label, String value) {
+    final colors = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -59,17 +72,14 @@ class PurchaseSpecsList extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 14, color: colors.onSurfaceVariant),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
+              color: colors.onSurface,
             ),
           ),
         ],

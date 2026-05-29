@@ -271,7 +271,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -308,16 +308,17 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   }
 
   Widget _buildPhotoUpload() {
+    final colors = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
         height: 180,
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainerHighest,
+          color: colors.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(DesignTokens.radiusXl),
           border: _imageFile == null
               ? Border.all(
-                  color: AppColors.outlineVariant,
+                  color: colors.outlineVariant,
                   width: 2,
                   strokeAlign: BorderSide.strokeAlignInside,
                 )
@@ -431,14 +432,17 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
 
   Widget _buildFormCard() {
     final l10n = AppL10n.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: colors.shadow.withAlpha(
+              colors.brightness == Brightness.dark ? 70 : 10,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -451,11 +455,11 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
           const SizedBox(height: 8),
           TextFormField(
             controller: _nameController,
-            style: const TextStyle(fontSize: 18, color: AppColors.onSurface),
-            decoration: const InputDecoration(
+            style: TextStyle(fontSize: 18, color: colors.onSurface),
+            decoration: InputDecoration(
               hintText: 'e.g. MacBook Pro 14',
               hintStyle: TextStyle(
-                color: AppColors.onSurfaceVariant,
+                color: colors.onSurfaceVariant,
                 fontSize: 16,
               ),
             ),
@@ -480,24 +484,21 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: AppColors.onSurface,
-                      ),
+                      style: TextStyle(fontSize: 18, color: colors.onSurface),
                       decoration: InputDecoration(
                         hintText: '0.00',
-                        hintStyle: const TextStyle(
-                          color: AppColors.onSurfaceVariant,
+                        hintStyle: TextStyle(
+                          color: colors.onSurfaceVariant,
                           fontSize: 16,
                         ),
-                        prefixIcon: const Padding(
-                          padding: EdgeInsets.only(left: 16, top: 12),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 16, top: 12),
                           child: Text(
                             '¥',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.onSurfaceVariant,
+                              color: colors.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -541,16 +542,16 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceContainerLow,
+                          color: colors.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(
                             DesignTokens.radiusMd,
                           ),
                         ),
                         child: Text(
                           DateFormat('yyyy-MM-dd').format(_purchaseDate),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
-                            color: AppColors.onSurface,
+                            color: colors.onSurface,
                           ),
                         ),
                       ),
@@ -566,7 +567,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
           TextFormField(
             controller: _notesController,
             maxLines: 3,
-            style: const TextStyle(fontSize: 18, color: AppColors.onSurface),
+            style: TextStyle(fontSize: 18, color: colors.onSurface),
             decoration: InputDecoration(
               hintText: l10n.isZh
                   ? '成色、序列号等'
@@ -583,12 +584,13 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   }
 
   Widget _buildFieldLabel(String text) {
+    final colors = Theme.of(context).colorScheme;
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        color: AppColors.onSurfaceVariant,
+        color: colors.onSurfaceVariant,
         letterSpacing: 0.24,
       ),
     );
@@ -597,27 +599,25 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   Widget _buildCategoryDropdown() {
     final l10n = AppL10n.of(context);
     final categoriesAsync = ref.watch(categoriesProvider);
+    final colors = Theme.of(context).colorScheme;
 
     return categoriesAsync.when(
       data: (cats) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLow,
+            color: colors.surfaceContainerLow,
             borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _category,
               isExpanded: true,
-              icon: const Icon(
-                Icons.expand_more,
-                color: AppColors.onSurfaceVariant,
-              ),
-              style: const TextStyle(fontSize: 18, color: AppColors.onSurface),
+              icon: Icon(Icons.expand_more, color: colors.onSurfaceVariant),
+              style: TextStyle(fontSize: 18, color: colors.onSurface),
               hint: Text(
                 l10n.selectCategory,
-                style: const TextStyle(color: AppColors.onSurfaceVariant),
+                style: TextStyle(color: colors.onSurfaceVariant),
               ),
               items: [
                 ...cats.map(
@@ -667,7 +667,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
       error: (e, s) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLow,
+          color: colors.surfaceContainerLow,
           borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
         ),
         child: Text(_category),
@@ -683,14 +683,17 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   }
 
   Widget _buildStatusToggle() {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: colors.shadow.withAlpha(
+              colors.brightness == Brightness.dark ? 70 : 10,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -709,10 +712,10 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
           const SizedBox(width: 12),
           Text(
             AppL10n.of(context).markInService,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
+              color: colors.onSurface,
               letterSpacing: 0.24,
             ),
           ),
@@ -733,12 +736,13 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
 
   Widget _buildSaveButton() {
     final l10n = AppL10n.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       decoration: BoxDecoration(
-        color: AppColors.surface.withAlpha(204),
-        border: const Border(
-          top: BorderSide(color: AppColors.outlineVariant, width: 0.5),
+        color: colors.surface.withAlpha(220),
+        border: Border(
+          top: BorderSide(color: colors.outlineVariant, width: 0.5),
         ),
       ),
       child: SizedBox(

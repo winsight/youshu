@@ -27,8 +27,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      final shouldShowShadow = _scrollController.hasClients &&
-          _scrollController.offset > 10;
+      final shouldShowShadow =
+          _scrollController.hasClients && _scrollController.offset > 10;
       if (shouldShowShadow != _showShadow) {
         setState(() => _showShadow = shouldShowShadow);
       }
@@ -48,6 +48,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final summaryAsync = ref.watch(dashboardSummaryProvider);
     final filter = ref.watch(filterStateProvider);
     final assetsAsync = ref.watch(filteredAssetsProvider);
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: Column(
@@ -59,12 +60,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ? null
                   : RadialGradient(
                       center: Alignment.topLeft,
-                      colors: [
-                        AppColors.primary.withAlpha(25),
-                        AppColors.background,
-                      ],
+                      colors: [AppColors.primary.withAlpha(25), colors.surface],
                     ),
-              color: _showShadow ? AppColors.surface : null,
+              color: _showShadow ? colors.surface : null,
               boxShadow: _showShadow
                   ? [
                       BoxShadow(
@@ -87,18 +85,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       children: [
                         Text(
                           l10n.assets,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.onSurface,
+                            color: colors.onSurface,
                           ),
                         ),
                         Row(
                           children: [
                             IconButton(
                               icon: Icon(
-                                  _showSearch ? Icons.close : Icons.search,
-                                  color: AppColors.onSurface),
+                                _showSearch ? Icons.close : Icons.search,
+                                color: colors.onSurface,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   _showSearch = !_showSearch;
@@ -156,8 +155,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   filled: true,
                   fillColor: AppColors.surfaceContainerLow,
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(DesignTokens.radiusMd),
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -199,8 +197,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 return GridView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,

@@ -22,7 +22,7 @@ class AssetDetailsScreen extends ConsumerWidget {
     final assetAsync = ref.watch(assetDetailProvider(assetId));
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -121,35 +121,36 @@ class _AssetDetailContent extends StatelessWidget {
 
   Widget _buildHeroSection(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.primary.withAlpha(30), AppColors.background],
+          colors: [AppColors.primary.withAlpha(30), colors.surface],
         ),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
       ),
       child: Column(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+            borderRadius: BorderRadius.circular(36),
             child: Container(
               width: double.infinity,
               height: 280,
               margin: const EdgeInsets.symmetric(horizontal: 8),
-              color: Colors.white,
+              color: colors.surfaceContainerLowest,
               child: Center(child: _buildImage()),
             ),
           ),
           const SizedBox(height: 16),
           Text(
             asset.name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w700,
-              color: AppColors.onSurface,
+              color: colors.onSurface,
             ),
           ),
           const SizedBox(height: 8),
@@ -201,27 +202,32 @@ class _AssetDetailContent extends StatelessWidget {
   }
 
   Widget _buildCostItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: AppColors.onSurfaceVariant,
-            letterSpacing: 0.8,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: AppColors.onSurface,
-          ),
-        ),
-      ],
+    return Builder(
+      builder: (context) {
+        final colors = Theme.of(context).colorScheme;
+        return Column(
+          children: [
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: colors.onSurfaceVariant,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: colors.onSurface,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
