@@ -10,6 +10,7 @@ import '../../data/repository/sync_repository.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/asset_providers.dart';
 import '../../providers/locale_provider.dart';
+import '../../providers/theme_mode_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -51,15 +52,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ref.invalidate(categoryDistributionProvider);
           setState(() {
             final dt = result.syncTime ?? DateTime.now();
-            _lastSyncInfo = '${dt.month}/${dt.day} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+            _lastSyncInfo =
+                '${dt.month}/${dt.day} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
           });
         }
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(result.success
-              ? '${AppL10n.of(context).syncComplete} (↑${result.pushed} ↓${result.pulled})'
-              : '${result.error}'),
-          backgroundColor: result.success ? AppColors.primary : AppColors.error,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result.success
+                  ? '${AppL10n.of(context).syncComplete} (↑${result.pushed} ↓${result.pulled})'
+                  : '${result.error}',
+            ),
+            backgroundColor: result.success
+                ? AppColors.primary
+                : AppColors.error,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSyncing = false);
@@ -82,10 +90,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
     if (mounted) {
       setState(() {
-        _isConfigured = (url != null && url.isNotEmpty) || (token != null && token.isNotEmpty);
+        _isConfigured =
+            (url != null && url.isNotEmpty) ||
+            (token != null && token.isNotEmpty);
         if (lastSync != null) {
           final dt = DateTime.parse(lastSync);
-          _lastSyncInfo = '${dt.month}/${dt.day} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+          _lastSyncInfo =
+              '${dt.month}/${dt.day} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
         }
       });
     }
@@ -95,6 +106,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final selectedLang = ref.watch(localeProvider);
+    final selectedTheme = ref.watch(themeModeProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
@@ -107,14 +119,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: AppLanguage.values.map((lang) {
               final isSelected = selectedLang == lang;
               return InkWell(
-                onTap: () => ref.read(localeProvider.notifier).setLanguage(lang),
+                onTap: () =>
+                    ref.read(localeProvider.notifier).setLanguage(lang),
                 borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   child: Row(
                     children: [
-                      Expanded(child: Text(lang.displayName, style: const TextStyle(fontSize: 16, color: AppColors.onSurface))),
-                      if (isSelected) const Icon(Icons.check_circle, color: AppColors.primary, size: 22),
+                      Expanded(
+                        child: Text(
+                          lang.displayName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                      ),
+                      if (isSelected)
+                        const Icon(
+                          Icons.check_circle,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 24),
+
+          _SectionHeader(title: l10n.appearance),
+          _Card(
+            children: ThemeMode.values.map((mode) {
+              final isSelected = selectedTheme == mode;
+              return InkWell(
+                onTap: () =>
+                    ref.read(themeModeProvider.notifier).setThemeMode(mode),
+                borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _themeIcon(mode),
+                        color: AppColors.onSurfaceVariant,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _themeLabel(mode, l10n),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                      ),
+                      if (isSelected)
+                        const Icon(
+                          Icons.check_circle,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
                     ],
                   ),
                 ),
@@ -145,7 +218,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
                 borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   child: Row(
                     children: [
                       Radio<StorageProviderType>(
@@ -159,21 +235,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         },
                         activeColor: AppColors.primary,
                       ),
-                      Icon(provider.iconData, size: 22, color: AppColors.primary),
+                      Icon(
+                        provider.iconData,
+                        size: 22,
+                        color: AppColors.primary,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(l10n.isZh ? provider.chineseName : provider.displayName,
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.onSurface)),
+                            Text(
+                              l10n.isZh
+                                  ? provider.chineseName
+                                  : provider.displayName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.onSurface,
+                              ),
+                            ),
                             const SizedBox(height: 2),
-                            Text(_providerDesc(provider, l10n.isZh),
-                                style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                            Text(
+                              _providerDesc(provider, l10n.isZh),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant, size: 20),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: AppColors.onSurfaceVariant,
+                        size: 20,
+                      ),
                     ],
                   ),
                 ),
@@ -190,14 +287,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: FilledButton.icon(
                 onPressed: (_isSyncing || !_isConfigured) ? null : _doSync,
                 icon: _isSyncing
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                     : const Icon(Icons.sync, size: 20),
-                label: Text(_isSyncing
-                    ? (AppL10n.of(context).isZh ? '同步中...' : 'Syncing...')
-                    : (AppL10n.of(context).isZh ? '立即同步' : 'Sync Now')),
+                label: Text(
+                  _isSyncing
+                      ? (AppL10n.of(context).isZh ? '同步中...' : 'Syncing...')
+                      : (AppL10n.of(context).isZh ? '立即同步' : 'Sync Now'),
+                ),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignTokens.radiusMd)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
+                  ),
                 ),
               ),
             ),
@@ -209,11 +317,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _Card(
             padding: const EdgeInsets.all(16),
             children: [
-              _AboutRow(icon: Icons.info_outline, label: 'App Name', value: '有数'),
+              _AboutRow(
+                icon: Icons.info_outline,
+                label: 'App Name',
+                value: '有数',
+              ),
               const Divider(color: AppColors.outlineVariant, height: 1),
               _AboutRow(icon: Icons.tag, label: 'Version', value: '1.0.0'),
               const Divider(color: AppColors.outlineVariant, height: 1),
-              _AboutRow(icon: Icons.storage_outlined, label: 'Data Storage', value: 'Local + Cloud'),
+              _AboutRow(
+                icon: Icons.storage_outlined,
+                label: 'Data Storage',
+                value: 'Local + Cloud',
+              ),
             ],
           ),
           const SizedBox(height: 100),
@@ -225,11 +341,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _providerDesc(StorageProviderType type, bool isZh) {
     switch (type) {
       case StorageProviderType.webdav:
-        return isZh ? '支持 Nextcloud / 坚果云 / Synology' : 'Nextcloud / Jianguoyun / Synology';
+        return isZh
+            ? '支持 Nextcloud / 坚果云 / Synology'
+            : 'Nextcloud / Jianguoyun / Synology';
       case StorageProviderType.onedrive:
         return isZh ? '微软个人/企业账户登录' : 'Microsoft personal/business account';
       case StorageProviderType.googledrive:
         return isZh ? 'Google 账户授权登录' : 'Google account authorization';
+    }
+  }
+
+  String _themeLabel(ThemeMode mode, AppL10n l10n) {
+    switch (mode) {
+      case ThemeMode.system:
+        return l10n.themeSystem;
+      case ThemeMode.light:
+        return l10n.themeLight;
+      case ThemeMode.dark:
+        return l10n.themeDark;
+    }
+  }
+
+  IconData _themeIcon(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.system:
+        return Icons.brightness_auto_outlined;
+      case ThemeMode.light:
+        return Icons.light_mode_outlined;
+      case ThemeMode.dark:
+        return Icons.dark_mode_outlined;
     }
   }
 }
@@ -258,25 +398,52 @@ class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title});
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        child: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurfaceVariant, letterSpacing: 0.5)),
-      );
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: Text(
+      title,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: AppColors.onSurfaceVariant,
+        letterSpacing: 0.5,
+      ),
+    ),
+  );
 }
 
 class _AboutRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  const _AboutRow({required this.icon, required this.label, required this.value});
+  const _AboutRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(children: [
-          Icon(icon, size: 18, color: AppColors.onSurfaceVariant),
-          const SizedBox(width: 10),
-          Text(label, style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant)),
-          const Spacer(),
-          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.onSurface)),
-        ]),
-      );
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    child: Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.onSurfaceVariant),
+        const SizedBox(width: 10),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.onSurface,
+          ),
+        ),
+      ],
+    ),
+  );
 }

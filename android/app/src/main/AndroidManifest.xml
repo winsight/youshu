@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.CAMERA"/>
     <application
         android:label="有数"
         android:name="${applicationName}"
@@ -35,7 +36,7 @@
             android:value="subject_segmentation" />
         <!-- 图片裁剪 Activity -->
         <activity
-            android:name="com.canhub.cropper.CropActivity"
+            android:name="com.yalantis.ucrop.UCropActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity android:name="net.openid.appauth.RedirectUriReceiverActivity"
             android:launchMode="singleTask"

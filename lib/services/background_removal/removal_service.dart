@@ -27,12 +27,14 @@ class BackgroundRemovalService {
       }
     }
 
-    // 膨胀做白色描边，再在下方叠一层轻微黑色阴影
+    // 膨胀做白色描边，再在下方叠多层黑色阴影
     const strokeW = 3;
     final dilated = _dilate(mask, w, h, strokeW);
-    final shadow = _dilate(mask, w, h, strokeW + 3);
+    final nearShadow = _dilate(mask, w, h, strokeW + 5);
+    final midShadow = _dilate(mask, w, h, strokeW + 9);
+    final farShadow = _dilate(mask, w, h, strokeW + 14);
 
-    final pad = strokeW + 8;
+    final pad = strokeW + 24;
     final out = img.Image(
       width: w + pad * 2,
       height: h + pad * 2,
@@ -46,8 +48,16 @@ class BackgroundRemovalService {
         final dx = x + pad;
         final dy = y + pad;
 
-        if (shadow[idx] && !mask[idx]) {
-          out.setPixelRgba(dx + 3, dy + 3, 0, 0, 0, 48);
+        if (farShadow[idx] && !mask[idx]) {
+          out.setPixelRgba(dx + 9, dy + 10, 0, 0, 0, 22);
+        }
+
+        if (midShadow[idx] && !mask[idx]) {
+          out.setPixelRgba(dx + 6, dy + 7, 0, 0, 0, 38);
+        }
+
+        if (nearShadow[idx] && !mask[idx]) {
+          out.setPixelRgba(dx + 3, dy + 4, 0, 0, 0, 68);
         }
 
         if (dilated[idx] && !mask[idx]) {

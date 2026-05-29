@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -84,11 +85,82 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   }
 
   Future<void> _pickImage() async {
+    final source = await _chooseImageSource();
+    if (source == null) return;
+
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 2048);
+    final picked = await picker.pickImage(source: source, maxWidth: 2048);
     if (picked != null) {
-      setState(() => _imageFile = File(picked.path));
+      final cropped = await _cropImage(picked.path);
+      if (!mounted) return;
+      setState(() => _imageFile = File(cropped?.path ?? picked.path));
     }
+  }
+
+  Future<ImageSource?> _chooseImageSource() {
+    final l10n = AppL10n.of(context);
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l10n.chooseFromGallery),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(l10n.takePhoto),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<CroppedFile?> _cropImage(String sourcePath) {
+    final l10n = AppL10n.of(context);
+    return ImageCropper().cropImage(
+      sourcePath: sourcePath,
+      maxWidth: 2048,
+      maxHeight: 2048,
+      compressFormat: ImageCompressFormat.png,
+      compressQuality: 96,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: l10n.cropImage,
+          toolbarColor: AppColors.surface,
+          toolbarWidgetColor: AppColors.onSurface,
+          statusBarLight: true,
+          navBarLight: true,
+          activeControlsWidgetColor: AppColors.primary,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+          aspectRatioPresets: const [
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9,
+          ],
+        ),
+        IOSUiSettings(
+          title: l10n.cropImage,
+          doneButtonTitle: l10n.done,
+          cancelButtonTitle: l10n.cancel,
+          aspectRatioLockEnabled: false,
+          aspectRatioPresets: const [
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9,
+          ],
+        ),
+      ],
+    );
   }
 
   Future<void> _removeBackground() async {
@@ -108,8 +180,8 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  '${AppL10n.of(context).backgroundRemoveFailed}: $e')),
+            content: Text('${AppL10n.of(context).backgroundRemoveFailed}: $e'),
+          ),
         );
       }
     } finally {
@@ -160,7 +232,9 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
             ? null
             : _warrantyController.text.trim(),
         imagePath: imagePath,
-        stickerImagePath: _imageFile?.path.contains('_sticker') == true ? imagePath : null,
+        stickerImagePath: _imageFile?.path.contains('_sticker') == true
+            ? imagePath
+            : null,
         createdAt: now,
         updatedAt: now,
       );
@@ -177,17 +251,16 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
         final l10n = AppL10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                _isEditing ? l10n.assetUpdated : l10n.assetSaved),
+            content: Text(_isEditing ? l10n.assetUpdated : l10n.assetSaved),
           ),
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -205,12 +278,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(_isEditing ? l10n.editAsset : l10n.newAsset),
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: Text(l10n.help),
-          ),
-        ],
+        actions: [TextButton(onPressed: () {}, child: Text(l10n.help))],
       ),
       body: Form(
         key: _formKey,
@@ -387,7 +455,9 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
             decoration: const InputDecoration(
               hintText: 'e.g. MacBook Pro 14',
               hintStyle: TextStyle(
-                  color: AppColors.onSurfaceVariant, fontSize: 16),
+                color: AppColors.onSurfaceVariant,
+                fontSize: 16,
+              ),
             ),
             validator: (v) =>
                 v == null || v.trim().isEmpty ? l10n.nameRequired : null,
@@ -407,22 +477,29 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _priceController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       style: const TextStyle(
-                          fontSize: 18, color: AppColors.onSurface),
+                        fontSize: 18,
+                        color: AppColors.onSurface,
+                      ),
                       decoration: InputDecoration(
                         hintText: '0.00',
                         hintStyle: const TextStyle(
-                            color: AppColors.onSurfaceVariant, fontSize: 16),
+                          color: AppColors.onSurfaceVariant,
+                          fontSize: 16,
+                        ),
                         prefixIcon: const Padding(
                           padding: EdgeInsets.only(left: 16, top: 12),
-                          child: Text('¥',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.onSurfaceVariant,
-                              )),
+                          child: Text(
+                            '¥',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.onSurfaceVariant,
+                            ),
+                          ),
                         ),
                         prefixIconConstraints: const BoxConstraints(),
                       ),
@@ -460,16 +537,21 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceContainerLow,
-                          borderRadius:
-                              BorderRadius.circular(DesignTokens.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            DesignTokens.radiusMd,
+                          ),
                         ),
                         child: Text(
                           DateFormat('yyyy-MM-dd').format(_purchaseDate),
                           style: const TextStyle(
-                              fontSize: 18, color: AppColors.onSurface),
+                            fontSize: 18,
+                            color: AppColors.onSurface,
+                          ),
                         ),
                       ),
                     ),
@@ -486,9 +568,13 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
             maxLines: 3,
             style: const TextStyle(fontSize: 18, color: AppColors.onSurface),
             decoration: InputDecoration(
-              hintText: l10n.isZh ? '成色、序列号等' : 'Condition, serial number, etc.',
+              hintText: l10n.isZh
+                  ? '成色、序列号等'
+                  : 'Condition, serial number, etc.',
               hintStyle: const TextStyle(
-                  color: AppColors.onSurfaceVariant, fontSize: 16),
+                color: AppColors.onSurfaceVariant,
+                fontSize: 16,
+              ),
             ),
           ),
         ],
@@ -524,22 +610,32 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
             child: DropdownButton<String>(
               value: _category,
               isExpanded: true,
-              icon: const Icon(Icons.expand_more, color: AppColors.onSurfaceVariant),
+              icon: const Icon(
+                Icons.expand_more,
+                color: AppColors.onSurfaceVariant,
+              ),
               style: const TextStyle(fontSize: 18, color: AppColors.onSurface),
-              hint: Text(l10n.selectCategory,
-                  style: const TextStyle(color: AppColors.onSurfaceVariant)),
+              hint: Text(
+                l10n.selectCategory,
+                style: const TextStyle(color: AppColors.onSurfaceVariant),
+              ),
               items: [
-                ...cats.map((cat) => DropdownMenuItem(
-                      value: cat.name,
-                      child: Row(
-                        children: [
-                          Icon(CategoryInfo.iconFor(cat.iconName),
-                              size: 20, color: AppColors.primary),
-                          const SizedBox(width: 8),
-                          Text(l10n.isZh ? cat.nameZh : cat.name),
-                        ],
-                      ),
-                    )),
+                ...cats.map(
+                  (cat) => DropdownMenuItem(
+                    value: cat.name,
+                    child: Row(
+                      children: [
+                        Icon(
+                          CategoryInfo.iconFor(cat.iconName),
+                          size: 20,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(l10n.isZh ? cat.nameZh : cat.name),
+                      ],
+                    ),
+                  ),
+                ),
                 // "Add custom" option
                 const DropdownMenuItem(
                   value: '__custom__',
@@ -655,7 +751,9 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white),
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : const Icon(Icons.save, size: 22),
           label: Text(

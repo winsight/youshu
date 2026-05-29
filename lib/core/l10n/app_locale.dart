@@ -65,6 +65,10 @@ class AppL10n {
 
   // Add Asset
   String get uploadPhoto => isZh ? '上传或拍照' : 'Upload or Take Photo';
+  String get chooseFromGallery => isZh ? '从相册选择' : 'Choose from Gallery';
+  String get takePhoto => isZh ? '拍照' : 'Take Photo';
+  String get cropImage => isZh ? '裁剪图片' : 'Crop Image';
+  String get done => isZh ? '完成' : 'Done';
   String get assetName => isZh ? '资产名称' : 'Asset Name';
   String get category => isZh ? '分类' : 'Category';
   String get purchasePrice => isZh ? '购买价格' : 'Purchase Price';
@@ -103,12 +107,15 @@ class AppL10n {
   String get portfolioLiquidity => isZh ? '组合流动性' : 'Portfolio Liquidity';
   String get averageDailyCost => isZh ? '日均成本' : 'Average Daily Cost';
   String get noAssets => isZh ? '暂无资产' : 'No assets yet';
-  String get addFirstAsset => isZh ? '点击 + 添加你的第一个资产' : 'Tap + to add your first asset';
+  String get addFirstAsset =>
+      isZh ? '点击 + 添加你的第一个资产' : 'Tap + to add your first asset';
   String get addAsset => isZh ? '添加资产' : 'Add Asset';
 
   // Settings
   String get webdavSync => isZh ? 'WebDAV 同步' : 'WebDAV Sync';
-  String get webdavDesc => isZh ? '配置 WebDAV 服务器实现云端同步\n（支持 Nextcloud、Synology 等）' : 'Configure WebDAV server for cloud sync\n(Nextcloud, Synology, etc.)';
+  String get webdavDesc => isZh
+      ? '配置 WebDAV 服务器实现云端同步\n（支持 Nextcloud、Synology 等）'
+      : 'Configure WebDAV server for cloud sync\n(Nextcloud, Synology, etc.)';
   String get webdavUrl => isZh ? 'WebDAV 地址' : 'WebDAV URL';
   String get username => isZh ? '用户名' : 'Username';
   String get password => isZh ? '密码' : 'Password';
@@ -128,6 +135,10 @@ class AppL10n {
 
   // Language
   String get language => isZh ? '语言' : 'Language';
+  String get appearance => isZh ? '外观' : 'Appearance';
+  String get themeSystem => isZh ? '跟随系统' : 'System';
+  String get themeLight => isZh ? '浅色模式' : 'Light';
+  String get themeDark => isZh ? '深色模式' : 'Dark';
 
   // About
   String get about => isZh ? '关于' : 'About';
@@ -138,10 +149,12 @@ class AppL10n {
 
   // Delete
   String get deleteAsset => isZh ? '删除资产' : 'Delete Asset';
-  String get deleteConfirm => isZh ? '此操作不可撤销，确定删除吗？' : 'This cannot be undone. Are you sure?';
+  String get deleteConfirm =>
+      isZh ? '此操作不可撤销，确定删除吗？' : 'This cannot be undone. Are you sure?';
   String get assetNotFound => isZh ? '资产未找到' : 'Asset not found';
   String get backgroundRemoved => isZh ? '背景已去除' : 'Background removed';
-  String get backgroundRemoveFailed => isZh ? '背景去除失败' : 'Background removal failed';
+  String get backgroundRemoveFailed =>
+      isZh ? '背景去除失败' : 'Background removal failed';
   String get removeBackground => isZh ? '去除背景' : 'Remove Background';
 
   // Select category

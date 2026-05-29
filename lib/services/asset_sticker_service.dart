@@ -103,11 +103,13 @@ Uint8List _worker(Uint8List rgba, Uint8List? fgBytes, int w, int h, int r) {
     mask = _fallbackMask(src, w, h);
   }
 
-  // ----- white stroke + soft shadow on a transparent canvas -----
+  // ----- white stroke + layered soft shadow on a transparent canvas -----
   final whiteStroke = _dilate(mask, w, h, r);
-  final shadowMask = _dilate(mask, w, h, r + 4); // wider for shadow
+  final nearShadow = _dilate(mask, w, h, r + 5);
+  final midShadow = _dilate(mask, w, h, r + 10);
+  final farShadow = _dilate(mask, w, h, r + 16);
 
-  final pad = r + 10;
+  final pad = r + 26;
   final out = img.Image(
     width: w + pad * 2,
     height: h + pad * 2,
@@ -119,10 +121,14 @@ Uint8List _worker(Uint8List rgba, Uint8List? fgBytes, int w, int h, int r) {
     for (int x = 0; x < w; x++) {
       final i = y * w + x, dx = x + pad, dy = y + pad;
 
-      // 阴影（最底层，向右下偏移）
-      final sx = dx + 4, sy = dy + 4;
-      if (shadowMask[i] && !mask[i]) {
-        out.setPixelRgba(sx, sy, 0, 0, 0, 56);
+      if (farShadow[i] && !mask[i]) {
+        out.setPixelRgba(dx + 10, dy + 12, 0, 0, 0, 24);
+      }
+      if (midShadow[i] && !mask[i]) {
+        out.setPixelRgba(dx + 7, dy + 8, 0, 0, 0, 42);
+      }
+      if (nearShadow[i] && !mask[i]) {
+        out.setPixelRgba(dx + 4, dy + 5, 0, 0, 0, 72);
       }
 
       // 白描边（中间层，覆盖阴影）

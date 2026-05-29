@@ -48,16 +48,16 @@ class AssetDetailsScreen extends ConsumerWidget {
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: Text(l10n.delete,
-                            style: const TextStyle(color: AppColors.error)),
+                        child: Text(
+                          l10n.delete,
+                          style: const TextStyle(color: AppColors.error),
+                        ),
                       ),
                     ],
                   ),
                 );
                 if (confirm == true && context.mounted) {
-                  await ref
-                      .read(assetRepositoryProvider)
-                      .deleteAsset(assetId);
+                  await ref.read(assetRepositoryProvider).deleteAsset(assetId);
                   // 刷新所有相关 provider，确保 UI 立即反映删除
                   ref.invalidate(assetListProvider);
                   ref.invalidate(filteredAssetsProvider);
@@ -127,14 +127,9 @@ class _AssetDetailContent extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            AppColors.primary.withAlpha(30),
-            AppColors.background,
-          ],
+          colors: [AppColors.primary.withAlpha(30), AppColors.background],
         ),
-        borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(40),
-        ),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
       ),
       child: Column(
         children: [
@@ -145,7 +140,7 @@ class _AssetDetailContent extends StatelessWidget {
               height: 280,
               margin: const EdgeInsets.symmetric(horizontal: 8),
               color: Colors.white,
-              child: _buildImage(),
+              child: Center(child: _buildImage()),
             ),
           ),
           const SizedBox(height: 16),
@@ -162,16 +157,19 @@ class _AssetDetailContent extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildCostItem(
-                  l10n.originalCost,
-                  '¥${asset.purchasePrice.toStringAsFixed(0)}'),
+                l10n.originalCost,
+                '¥${asset.purchasePrice.toStringAsFixed(0)}',
+              ),
               Container(
                 width: 1,
                 height: 24,
                 color: AppColors.outlineVariant,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              _buildCostItem(l10n.dailyCost,
-                  '¥${asset.dailyCost.toStringAsFixed(2)}/${l10n.isZh ? '天' : 'day'}'),
+              _buildCostItem(
+                l10n.dailyCost,
+                '¥${asset.dailyCost.toStringAsFixed(2)}/${l10n.isZh ? '天' : 'day'}',
+              ),
             ],
           ),
         ],
@@ -182,14 +180,14 @@ class _AssetDetailContent extends StatelessWidget {
   Widget _buildImage() {
     final imgPath = asset.stickerImagePath ?? asset.imagePath;
     if (imgPath != null && File(imgPath).existsSync()) {
-      // 白色底容器，透明 PNG 自然融入
-      return Container(
-        color: Colors.white,
+      return Padding(
+        padding: const EdgeInsets.all(18),
         child: Image.file(
           File(imgPath),
           fit: BoxFit.contain,
-          alignment: Alignment.topLeft,
+          alignment: Alignment.center,
           width: double.infinity,
+          height: double.infinity,
         ),
       );
     }
