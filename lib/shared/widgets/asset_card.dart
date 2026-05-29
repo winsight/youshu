@@ -97,13 +97,15 @@ class AssetCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        SizedBox(
+        Container(
           height: 80,
           width: 80,
-          child: ClipRRect(
+          decoration: BoxDecoration(
+            color: Colors.white,
             borderRadius: BorderRadius.circular(8),
-            child: imageWidget,
           ),
+          clipBehavior: Clip.antiAlias,
+          child: imageWidget,
         ),
         _StatusBadge(
           isActive: isActive,

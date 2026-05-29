@@ -8,7 +8,6 @@ import '../../../shared/widgets/asset_card.dart';
 
 class AssetGridCard extends StatelessWidget {
   final Asset asset;
-
   const AssetGridCard({super.key, required this.asset});
 
   @override
@@ -19,8 +18,6 @@ class AssetGridCard extends StatelessWidget {
       AssetStatus.retired => '已退役',
       AssetStatus.sold => '已出售',
     };
-    final goalDone = asset.goalAchieved;
-
     return GestureDetector(
       onTap: () => context.push('/asset/${asset.id}'),
       child: AssetCard(
@@ -29,7 +26,7 @@ class AssetGridCard extends StatelessWidget {
         daysUsed: asset.daysUsed,
         dailyCost: asset.dailyCost,
         progressPercent: asset.progressRatio * 100,
-        remainingDays: goalDone ? null : asset.daysLeft,
+        remainingDays: asset.goalAchieved ? null : asset.daysLeft,
         status: statusLabel,
         isActive: isActive,
         imageWidget: _buildImageWidget(),
@@ -40,9 +37,8 @@ class AssetGridCard extends StatelessWidget {
   Widget _buildImageWidget() {
     final imgPath = asset.stickerImagePath ?? asset.imagePath;
     if (imgPath != null && File(imgPath).existsSync()) {
-      // 白色底让 PNG 透明部分自然融入卡片
-      return Container(
-        color: Colors.white,
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
         child: Image.file(
           File(imgPath),
           fit: BoxFit.contain,
@@ -50,14 +46,11 @@ class AssetGridCard extends StatelessWidget {
         ),
       );
     }
-    return Container(
-      color: Colors.white,
-      child: Center(
-        child: Icon(
-          CategoryInfo.iconFor(asset.category),
-          size: 36,
-          color: Colors.grey.shade300,
-        ),
+    return Center(
+      child: Icon(
+        CategoryInfo.iconFor(asset.category),
+        size: 36,
+        color: Colors.grey.shade300,
       ),
     );
   }

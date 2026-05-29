@@ -27,12 +27,18 @@ class BackgroundRemovalService {
       }
     }
 
-    // 膨胀做描边
+    // 膨胀做白色描边，再在下方叠一层轻微黑色阴影
     const strokeW = 3;
     final dilated = _dilate(mask, w, h, strokeW);
+    final shadow = _dilate(mask, w, h, strokeW + 3);
 
-    final pad = strokeW + 2;
-    final out = img.Image(width: w + pad * 2, height: h + pad * 2);
+    final pad = strokeW + 8;
+    final out = img.Image(
+      width: w + pad * 2,
+      height: h + pad * 2,
+      numChannels: 4,
+    );
+    img.fill(out, color: img.ColorRgba8(0, 0, 0, 0));
 
     for (int y = 0; y < h; y++) {
       for (int x = 0; x < w; x++) {
@@ -40,11 +46,24 @@ class BackgroundRemovalService {
         final dx = x + pad;
         final dy = y + pad;
 
+        if (shadow[idx] && !mask[idx]) {
+          out.setPixelRgba(dx + 3, dy + 3, 0, 0, 0, 48);
+        }
+
+        if (dilated[idx] && !mask[idx]) {
+          out.setPixelRgba(dx, dy, 255, 255, 255, 255);
+        }
+
         if (mask[idx]) {
           final p = target.getPixel(x, y);
-          out.setPixelRgba(dx, dy, p.r.toInt(), p.g.toInt(), p.b.toInt(), p.a.toInt());
-        } else if (dilated[idx]) {
-          out.setPixelRgba(dx, dy, 255, 255, 255, 255);
+          out.setPixelRgba(
+            dx,
+            dy,
+            p.r.toInt(),
+            p.g.toInt(),
+            p.b.toInt(),
+            p.a.toInt(),
+          );
         }
       }
     }
@@ -62,7 +81,10 @@ class BackgroundRemovalService {
 
     void sample(int x, int y) {
       final p = image.getPixel(x, y);
-      sr += p.r.toInt(); sg += p.g.toInt(); sb += p.b.toInt(); count++;
+      sr += p.r.toInt();
+      sg += p.g.toInt();
+      sb += p.b.toInt();
+      count++;
     }
 
     // 四角
@@ -72,8 +94,14 @@ class BackgroundRemovalService {
     sample(image.width - 1, image.height - 1);
 
     // 四边
-    for (int x = 0; x < image.width; x += 15) { sample(x, 0); sample(x, image.height - 1); }
-    for (int y = 0; y < image.height; y += 15) { sample(0, y); sample(image.width - 1, y); }
+    for (int x = 0; x < image.width; x += 15) {
+      sample(x, 0);
+      sample(x, image.height - 1);
+    }
+    for (int y = 0; y < image.height; y += 15) {
+      sample(0, y);
+      sample(image.width - 1, y);
+    }
 
     // 返回 RGB 整数值（打包为单 int 方便比较）
     return ((sr ~/ count) << 16) | ((sg ~/ count) << 8) | (sb ~/ count);
