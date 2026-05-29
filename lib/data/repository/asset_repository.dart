@@ -27,8 +27,26 @@ class AssetRepository implements ISyncDatabase {
     return _toModel(rows.first);
   }
 
+  Future<void> _ensureCategory(String name) async {
+    final exists = await (_db.select(_db.categories)
+          ..where((t) => t.name.equals(name))
+          ..limit(1))
+        .get();
+    if (exists.isEmpty) {
+      await _db.into(_db.categories).insertOnConflictUpdate(
+            db.CategoriesCompanion(
+              name: Value(name),
+              nameZh: Value(name),
+              iconName: const Value('category'),
+              sortOrder: const Value(99),
+            ),
+          );
+    }
+  }
+
   @override
   Future<void> insert(model.Asset asset) async {
+    await _ensureCategory(asset.category);
     await _db.into(_db.assets).insert(
           db.AssetsCompanion(
             id: Value(asset.id),
@@ -53,6 +71,7 @@ class AssetRepository implements ISyncDatabase {
 
   @override
   Future<void> update(model.Asset asset) async {
+    await _ensureCategory(asset.category);
     await (_db.update(_db.assets)..where((t) => t.id.equals(asset.id))).write(
           db.AssetsCompanion(
             name: Value(asset.name),
