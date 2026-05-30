@@ -82,6 +82,10 @@ class WebDavService extends CloudStorage {
   @override
   Future<void> uploadFile(String remotePath, File localFile) async {
     final bytes = await localFile.readAsBytes();
+    if (bytes.isEmpty) {
+      AppLogger.warn('跳过空文件上传: ${localFile.path}');
+      return;
+    }
     final fullPath = _basePath + remotePath;
     final response = await _dio.put(
       fullPath,
@@ -94,6 +98,7 @@ class WebDavService extends CloudStorage {
       final errMsg = _parseXmlError(body) ?? 'HTTP ${response.statusCode}';
       throw WebDavException(errMsg, statusCode: response.statusCode);
     }
+    AppLogger.info('WebDAV uploaded: $remotePath (${bytes.length} bytes)');
   }
 
   @override

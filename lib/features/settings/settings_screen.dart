@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/l10n/app_locale.dart';
 import '../../services/cloud_storage.dart';
@@ -35,10 +36,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     setState(() => _isSyncing = true);
     try {
       final prefs = await SharedPreferences.getInstance();
+      final storage = const FlutterSecureStorage();
       final config = StorageConfig(
         type: _providerType,
         url: prefs.getString('webdav_url'),
         username: prefs.getString('webdav_username'),
+        password: await storage.read(key: 'webdav_password'),
+        accessToken: await _loadToken(),
       );
       final syncRepo = SyncRepository(ref.read(assetRepositoryProvider));
       syncRepo.configure(config);
@@ -72,6 +76,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } finally {
       if (mounted) setState(() => _isSyncing = false);
     }
+  }
+
+  Future<String?> _loadToken() async {
+    final storage = const FlutterSecureStorage();
+    return await storage.read(key: 'gdrive_token') ??
+           await storage.read(key: 'onedrive_token') ??
+           await storage.read(key: 'storage_token');
   }
 
   Future<void> _loadStatus() async {

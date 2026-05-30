@@ -180,12 +180,12 @@ class _AssetDetailContent extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    final imgPath = asset.stickerImagePath ?? asset.imagePath;
-    if (imgPath != null && File(imgPath).existsSync()) {
+    final imageFile = _existingImageFile();
+    if (imageFile != null) {
       return Padding(
         padding: const EdgeInsets.all(18),
         child: Image.file(
-          File(imgPath),
+          imageFile,
           fit: BoxFit.contain,
           alignment: Alignment.center,
           width: double.infinity,
@@ -200,6 +200,15 @@ class _AssetDetailContent extends StatelessWidget {
         color: AppColors.outlineVariant,
       ),
     );
+  }
+
+  File? _existingImageFile() {
+    for (final path in [asset.stickerImagePath, asset.imagePath]) {
+      if (path == null || path.isEmpty) continue;
+      final file = File(path);
+      if (file.existsSync()) return file;
+    }
+    return null;
   }
 
   Widget _buildCostItem(String label, String value) {

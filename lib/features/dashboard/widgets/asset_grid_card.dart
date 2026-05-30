@@ -36,12 +36,12 @@ class AssetGridCard extends StatelessWidget {
   }
 
   Widget _buildImageWidget() {
-    final imgPath = asset.stickerImagePath ?? asset.imagePath;
-    if (imgPath != null && File(imgPath).existsSync()) {
+    final imageFile = _existingImageFile();
+    if (imageFile != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.file(
-          File(imgPath),
+          imageFile,
           fit: BoxFit.contain,
           alignment: Alignment.topLeft,
         ),
@@ -54,5 +54,14 @@ class AssetGridCard extends StatelessWidget {
         color: Colors.grey,
       ),
     );
+  }
+
+  File? _existingImageFile() {
+    for (final path in [asset.stickerImagePath, asset.imagePath]) {
+      if (path == null || path.isEmpty) continue;
+      final file = File(path);
+      if (file.existsSync()) return file;
+    }
+    return null;
   }
 }

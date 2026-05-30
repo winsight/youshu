@@ -121,7 +121,7 @@ class SyncService {
       for (final id in pulledIds) {
         final remote = remoteMap[id];
         if (remote == null) continue;
-        if (remote.imagePath != null && remote.imagePath!.isNotEmpty) {
+        if (_hasRemoteImage(remote)) {
           await _downloadImageIfNeeded(remote);
         }
       }
@@ -137,12 +137,20 @@ class SyncService {
         '上传 data.json 完成: ${allLocal.length} 条记录，当前有效资产 $pushed 条',
       );
 
-      // ---- 7. 上传所有本地图片（含贴纸） ----
+      // ---- 7. 上传图片（仅上传本地更新的资产） ----
       int imagesUploaded = 0;
       for (final local in allLocal) {
         if (local.isDeleted) continue;
+        final remote = remoteMap[local.id];
 
-        // 上传贴纸图（优先，因为更有展示价值）
+        // 只上传本地比云端新的资产图片（未变化的不重复上传）
+        final needsUpload = remote == null ||
+            local.updatedAt.millisecondsSinceEpoch >
+                remote.updatedAt.millisecondsSinceEpoch;
+
+        if (!needsUpload) continue;
+
+        // 上传贴纸图
         if (local.stickerImagePath != null &&
             local.stickerImagePath!.isNotEmpty) {
           final stickerFile = File(local.stickerImagePath!);
@@ -150,9 +158,7 @@ class SyncService {
             try {
               final ext = local.stickerImagePath!.split('.').last;
               await _remote.uploadFile(
-                '$remoteImageDir/${local.id}_sticker.$ext',
-                stickerFile,
-              );
+                '$remoteImageDir/${local.id}_sticker.$ext', stickerFile);
               imagesUploaded++;
               AppLogger.info('上传贴纸图: ${local.id}_sticker.$ext');
             } catch (e) {
@@ -168,9 +174,7 @@ class SyncService {
             try {
               final ext = local.imagePath!.split('.').last;
               await _remote.uploadFile(
-                '$remoteImageDir/${local.id}.$ext',
-                imageFile,
-              );
+                '$remoteImageDir/${local.id}.$ext', imageFile);
               imagesUploaded++;
               AppLogger.info('上传图片: ${local.id}.$ext');
             } catch (e) {
@@ -199,47 +203,108 @@ class SyncService {
     }
   }
 
+  bool _hasRemoteImage(Asset remote) {
+    return (remote.imagePath != null && remote.imagePath!.isNotEmpty) ||
+        (remote.stickerImagePath != null &&
+            remote.stickerImagePath!.isNotEmpty);
+  }
+
   /// 下载远端图片到本地，并将本地路径写回数据库
   Future<void> _downloadImageIfNeeded(Asset remote) async {
-    if (remote.imagePath == null || remote.imagePath!.isEmpty) return;
-
     final appDir = await _getLocalImageDir();
+    String? localStickerPath;
+    String? localImagePath;
 
-    // 先尝试下载贴纸图（_sticker.png）
-    final stickerFile = await _remote.downloadFile(
-      '$remoteImageDir/${remote.id}_sticker.png',
-      '$appDir/${remote.id}_sticker.png',
+    // 先尝试下载贴纸图。旧数据通常是 id_sticker.png，新数据按 JSON 扩展名兜底。
+    final stickerExt = _extensionOf(remote.stickerImagePath) ?? 'png';
+    final stickerFile = await _downloadFirstExisting(
+      remoteCandidates: [
+        '$remoteImageDir/${remote.id}_sticker.$stickerExt',
+        '$remoteImageDir/${remote.id}_sticker.png',
+        if (remote.stickerImagePath != null)
+          '$remoteImageDir/${_basename(remote.stickerImagePath!)}',
+      ],
+      localPath: '$appDir/${remote.id}_sticker.$stickerExt',
     );
     if (stickerFile != null && await stickerFile.exists()) {
-      await _localDb.update(
-        remote.copyWith(stickerImagePath: stickerFile.path),
-      );
-      AppLogger.info('下载贴纸图成功: ${remote.id}_sticker.png');
+      localStickerPath = stickerFile.path;
+      AppLogger.info('下载贴纸图成功: ${remote.id}');
     }
 
-    // 再尝试下载原图
-    for (final ext in [
-      'jpg',
-      'jpeg',
-      'png',
-      'webp',
-      'heic',
-      'heif',
-      'gif',
-      'bmp',
-    ]) {
-      final localPath = '$appDir/${remote.id}.$ext';
-      final file = await _remote.downloadFile(
-        '$remoteImageDir/${remote.id}.$ext',
-        localPath,
-      );
-      if (file != null && await file.exists()) {
-        await _localDb.update(remote.copyWith(imagePath: file.path));
-        AppLogger.info('下载图片成功: ${remote.id}.$ext');
-        return;
-      }
+    // 再尝试下载原图 —— 先尝试 imagePath 里记录的文件名，再循环常见扩展名
+    final imageExt = _extensionOf(remote.imagePath) ?? 'png';
+    final imageFile = await _downloadFirstExisting(
+      remoteCandidates: [
+        if (remote.imagePath != null)
+          '$remoteImageDir/${_basename(remote.imagePath!)}',
+        '$remoteImageDir/${remote.id}.$imageExt',
+        for (final ext in [
+          'jpg',
+          'jpeg',
+          'png',
+          'webp',
+          'heic',
+          'heif',
+          'gif',
+          'bmp',
+        ])
+          '$remoteImageDir/${remote.id}.$ext',
+      ],
+      localPath: '$appDir/${remote.id}.$imageExt',
+    );
+    if (imageFile != null && await imageFile.exists()) {
+      localImagePath = imageFile.path;
+      AppLogger.info('下载图片成功: ${remote.id}');
     }
+
+    if (localStickerPath != null || localImagePath != null) {
+      await _localDb.update(
+        Asset(
+          id: remote.id,
+          name: remote.name,
+          category: remote.category,
+          purchasePrice: remote.purchasePrice,
+          purchaseDate: remote.purchaseDate,
+          status: remote.status,
+          goalDays: remote.goalDays,
+          imagePath: localImagePath ?? remote.imagePath,
+          stickerImagePath: localStickerPath ?? remote.stickerImagePath,
+          notes: remote.notes,
+          merchant: remote.merchant,
+          warranty: remote.warranty,
+          createdAt: remote.createdAt,
+          updatedAt: remote.updatedAt,
+          isDeleted: remote.isDeleted,
+          syncVersion: remote.syncVersion,
+        ),
+      );
+      return;
+    }
+
     AppLogger.warn('图片下载失败: ${remote.id}');
+  }
+
+  Future<File?> _downloadFirstExisting({
+    required List<String> remoteCandidates,
+    required String localPath,
+  }) async {
+    final tried = <String>{};
+    for (final remotePath in remoteCandidates) {
+      if (remotePath.trim().isEmpty || !tried.add(remotePath)) continue;
+      final file = await _remote.downloadFile(remotePath, localPath);
+      if (file != null && await file.exists()) return file;
+    }
+    return null;
+  }
+
+  String _basename(String path) => path.split('/').last;
+
+  String? _extensionOf(String? path) {
+    if (path == null || path.isEmpty) return null;
+    final name = _basename(path);
+    final dot = name.lastIndexOf('.');
+    if (dot < 0 || dot == name.length - 1) return null;
+    return name.substring(dot + 1).toLowerCase();
   }
 
   Future<String> _getLocalImageDir() async {

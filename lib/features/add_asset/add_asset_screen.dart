@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../core/theme/app_colors.dart';
@@ -87,21 +87,8 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   }
 
   Future<void> _pickImage() async {
-    final source = await _chooseImageSource();
-    if (source == null) return;
-
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source, maxWidth: 2048);
-    if (picked != null) {
-      final cropped = await _cropImage(picked.path);
-      if (!mounted) return;
-      setState(() => _imageFile = File(cropped?.path ?? picked.path));
-    }
-  }
-
-  Future<ImageSource?> _chooseImageSource() {
     final l10n = AppL10n.of(context);
-    return showModalBottomSheet<ImageSource>(
+    final source = await showModalBottomSheet<ImageSource>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
@@ -122,6 +109,15 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
         ),
       ),
     );
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source, maxWidth: 2048);
+    if (picked != null) {
+      final cropped = await _cropImage(picked.path);
+      if (!mounted) return;
+      setState(() => _imageFile = File(cropped?.path ?? picked.path));
+    }
   }
 
   Future<CroppedFile?> _cropImage(String sourcePath) {
