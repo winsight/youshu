@@ -51,12 +51,10 @@ class StatisticsRepository {
 
     final totalDailyCost =
         assets.fold<double>(0, (sum, a) => sum + a.dailyCost);
-    final dailyAvgCost =
-        assets.isNotEmpty ? totalDailyCost / assets.length.toDouble() : 0.0;
 
     return DashboardSummary(
       totalValue: totalValue,
-      dailyAvgCost: dailyAvgCost,
+      dailyAvgCost: totalDailyCost,
       totalAssets: assets.length,
       inServiceCount: inService.length,
       retiredCount: retired.length,

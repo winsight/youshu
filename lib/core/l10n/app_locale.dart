@@ -43,7 +43,7 @@ class AppL10n {
 
   String get assetOverview => isZh ? '资产概览' : 'Asset Overview';
   String get totalValue => isZh ? '总价值' : 'Total Value';
-  String get dailyAvg => isZh ? '日均成本' : 'Daily Avg';
+  String get dailyAvg => isZh ? '每日成本' : 'Daily Cost';
   String get inService => isZh ? '使用中' : 'In Service';
   String get retired => isZh ? '已退役' : 'Retired';
   String get sold => isZh ? '已出售' : 'Sold';

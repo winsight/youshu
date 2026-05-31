@@ -162,7 +162,7 @@ class StatisticsScreen extends ConsumerWidget {
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -517,32 +517,33 @@ class StatisticsScreen extends ConsumerWidget {
 
   Widget _buildMiniBar(String label, int count, Color color) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 6,
+          width: 14,
           height: 40,
           decoration: BoxDecoration(
             color: AppColors.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(4),
           ),
           alignment: Alignment.bottomCenter,
           child: Container(
-            width: 6,
-            height: 40 * (count / 40).clamp(0.05, 1.0),
+            width: 14,
+            height: 40 * ((count + 1) / 42).clamp(0.05, 1.0),
             decoration: BoxDecoration(
               color: color,
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           '$count',
-          style: TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.bold,
-            color: Colors.white70,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        ),
+        Text(
+          label,
+          style: TextStyle(fontSize: 10),
         ),
       ],
     );
