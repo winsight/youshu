@@ -7,17 +7,34 @@ import 'core/theme/app_theme.dart';
 import 'providers/locale_provider.dart';
 import 'providers/theme_mode_provider.dart';
 import 'router/app_router.dart';
+import 'shared/widgets/update_dialog.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: AssetSumApp()));
 }
 
-class AssetSumApp extends ConsumerWidget {
+class AssetSumApp extends ConsumerStatefulWidget {
   const AssetSumApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AssetSumApp> createState() => _AssetSumAppState();
+}
+
+class _AssetSumAppState extends ConsumerState<AssetSumApp> {
+  @override
+  void initState() {
+    super.initState();
+    _checkUpdateOnStartup();
+  }
+
+  Future<void> _checkUpdateOnStartup() async {
+    await Future.delayed(const Duration(seconds: 3)); // 等首页渲染完
+    if (mounted) checkAndShowUpdate(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final locale = ref.watch(resolvedLocaleProvider);
     final themeMode = ref.watch(themeModeProvider);
 

@@ -12,6 +12,7 @@ import '../../providers/database_provider.dart';
 import '../../providers/asset_providers.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/theme_mode_provider.dart';
+import '../../shared/widgets/update_dialog.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -322,6 +323,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 32),
+
+          // Check update
+          _SectionHeader(title: l10n.isZh ? '版本更新' : 'Update'),
+          _Card(
+            children: [
+              InkWell(
+                onTap: () => checkAndShowUpdate(context),
+                borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.system_update, size: 22, color: AppColors.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(l10n.isZh ? '检查更新' : 'Check for Updates',
+                            style: const TextStyle(fontSize: 16, color: AppColors.onSurface)),
+                      ),
+                      const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
 
           // About
           _SectionHeader(title: l10n.about),
