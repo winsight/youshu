@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/l10n/app_locale.dart';
 import '../../services/cloud_storage.dart';
@@ -24,6 +25,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isConfigured = false;
   bool _isSyncing = false;
+  String _appVersion = '';
   String? _lastSyncInfo;
   StorageProviderType _providerType = StorageProviderType.webdav;
 
@@ -31,6 +33,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void initState() {
     super.initState();
     _loadStatus();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) setState(() => _appVersion = '${info.version}+${info.buildNumber}');
   }
 
   Future<void> _doSync() async {
@@ -361,7 +369,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 value: '有数',
               ),
               const Divider(color: AppColors.outlineVariant, height: 1),
-              _AboutRow(icon: Icons.tag, label: 'Version', value: '1.0.0'),
+              _AboutRow(icon: Icons.tag, label: 'Version', value: _appVersion.isNotEmpty ? _appVersion : '1.0.2+3'),
               const Divider(color: AppColors.outlineVariant, height: 1),
               _AboutRow(
                 icon: Icons.storage_outlined,

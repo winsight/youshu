@@ -5,7 +5,14 @@ import '../../services/version_check_service.dart';
 Future<void> checkAndShowUpdate(BuildContext context) async {
   final service = VersionCheckService();
   final info = await service.checkUpdate();
-  if (info == null || !context.mounted) return;
+  if (!context.mounted) return;
+
+  if (info == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('已是最新版本')),
+    );
+    return;
+  }
 
   showDialog(
     context: context,
