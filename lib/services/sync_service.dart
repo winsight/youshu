@@ -56,6 +56,7 @@ class SyncService {
     try {
       // ---- 1. 确保远端目录存在 ----
       await _remote.createDirectory('youshu');
+      await _remote.createDirectory(remoteImageDir);
 
       // ---- 2. 拉取云端 data.json ----
       List<Asset> remoteAssets;

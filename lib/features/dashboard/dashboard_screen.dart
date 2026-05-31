@@ -59,17 +59,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
-              gradient: _showShadow
-                  ? null
-                  : RadialGradient(
-                      center: Alignment.topLeft,
-                      colors: [AppColors.primary.withAlpha(25), colors.surface],
-                    ),
-              color: _showShadow ? colors.surface : null,
+              gradient: RadialGradient(
+                center: Alignment.topLeft,
+                colors: [AppColors.primary.withAlpha(25), colors.surface],
+              ),
               boxShadow: _showShadow
                   ? [
                       BoxShadow(
-                        color: Colors.black.withAlpha(10),
+                        color: colors.shadow.withAlpha(15),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

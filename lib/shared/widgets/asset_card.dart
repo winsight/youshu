@@ -29,18 +29,30 @@ class AssetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = colors.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark
+              ? colors.outlineVariant.withAlpha(60)
+              : colors.outlineVariant.withAlpha(40),
+        ),
         boxShadow: [
+          // 柔和大阴影（深度感）
           BoxShadow(
-            color: colors.shadow.withAlpha(
-              colors.brightness == Brightness.dark ? 70 : 10,
-            ),
-            blurRadius: 24,
-            offset: const Offset(0, 6),
+            color: colors.shadow.withAlpha(isDark ? 120 : 25),
+            blurRadius: 32,
+            offset: const Offset(0, 8),
+            spreadRadius: -4,
+          ),
+          // 紧致小阴影（边缘感）
+          BoxShadow(
+            color: colors.shadow.withAlpha(isDark ? 50 : 12),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -104,7 +116,7 @@ class AssetCard extends StatelessWidget {
           height: 80,
           width: 80,
           decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
+            color: colors.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(8),
           ),
           clipBehavior: Clip.antiAlias,
