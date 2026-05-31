@@ -1,0 +1,7 @@
+{
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "updateUrl": "https://github.com/winsight/youshu/releases/latest",
+  "releaseNote": "有数 v1.0.0 首发版本\n\n功能：\n- 资产录入与管理\n- 三种云同步（WebDAV / Google Drive / OneDrive）\n- ML Kit 智能抠图 + 贴纸效果\n- 深色/浅色模式\n- 多选删除、分类管理、排序筛选\n- 中英文切换",
+  "forceUpdate": false
+}
