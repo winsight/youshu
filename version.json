@@ -1,7 +1,7 @@
 {
-  "versionName": "1.0.0",
-  "versionCode": 1,
+  "versionName": "1.0.1",
+  "versionCode": 2,
   "updateUrl": "https://github.com/winsight/youshu/releases/latest",
-  "releaseNote": "有数 v1.0.0 首发版本\n\n功能：\n- 资产录入与管理\n- 三种云同步（WebDAV / Google Drive / OneDrive）\n- ML Kit 智能抠图 + 贴纸效果\n- 深色/浅色模式\n- 多选删除、分类管理、排序筛选\n- 中英文切换",
+  "releaseNote": "v1.0.1 更新\n\n新增：\n- 版本更新检测功能（基于 GitHub version.json）\n- 图片同步策略优化（去重上传）\n- WebDAV 图片目录自动创建\n- 资产卡片立体阴影效果\n- 竖条标签标注（组合流动性）\n- 每日成本改为总和显示\n- 趋势/资产页面渐变统一\n\n修复：\n- 自定义裁剪功能恢复\n- 同步按钮 WebDAV 密码缺失\n- 深色模式文字颜色\n- 图片下载文件名匹配",
   "forceUpdate": false
 }
